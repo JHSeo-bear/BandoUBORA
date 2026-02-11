@@ -26,13 +26,11 @@
         .alert-content {
             width: 85%; max-width: 280px; padding: 40px 20px; border-radius: 25px; 
             text-align: center; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease; /* 색상 변경 시 부드럽게 */
         }
-        /* [최상단] 전체 차량번호 */
         .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
-        /* [중간] 입주민 차량 안내 */
         .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
-        /* [하단] 순번 정보 추가 */
-        .res-order { font-size: 18px; font-weight: 400; display: block; opacity: 0.9; }
+        .res-order { font-size: 18px; font-weight: 400; display: block; opacity: 0.95; }
     </style>
 </head>
 <body>
@@ -48,32 +46,35 @@
         <div id="alertBox" class="alert-content">
             <div id="resFullNum" class="res-full-num"></div>
             <div id="resMsg" class="res-msg"></div>
-            <div id="resOrder" class="res-order"></div> </div>
+            <div id="resOrder" class="res-order"></div>
+        </div>
     </div>
 
     <script>
         let carData = [];
 
-        // 데이터 로드
         fetch('carDB.json')
             .then(res => res.json())
-            .then(data => {
-                carData = data;
-                console.log("데이터 로드 완료");
-            })
+            .then(data => { carData = data; })
             .catch(err => console.error("데이터 로드 실패"));
 
         function runSearch() {
             const inputVal = document.getElementById('carNumberInput').value;
             if(inputVal.length < 4) return;
 
-            // 검색
             const foundCar = carData.find(car => String(car.car_number_for).trim() === inputVal);
 
             if(foundCar) {
-                // 순번 텍스트 생성: [1]순번 차량입니다.
-                const orderText = `[${foundCar.registration_order}]순번 차량입니다.`;
-                showResult(foundCar.car_number_all, "입주민 차량입니다.", orderText, "#1DDB16");
+                const order = foundCar.registration_order;
+                const orderText = `[${order}]순번 차량입니다.`;
+                
+                // 순번별 색상 지정
+                let bgColor = "#1DDB16"; // 기본 초록색 (2순번 포함)
+                if (order === 1) bgColor = "#368AFF";      // 1순번: 파랑
+                else if (order === 3) bgColor = "#FFBB00"; // 3순번: 노랑
+                else if (order === 4) bgColor = "#FF00DD"; // 4순번: 핑크
+
+                showResult(foundCar.car_number_all, "입주민 차량입니다.", orderText, bgColor);
             } else {
                 showResult("미등록", "등록되지 않은 차량입니다.", "", "#FF3636");
             }
@@ -82,11 +83,10 @@
         function showResult(fullNum, msg, order, bgColor) {
             document.getElementById('resFullNum').innerText = fullNum;
             document.getElementById('resMsg').innerText = msg;
-            document.getElementById('resOrder').innerText = order; // 순번 표시
+            document.getElementById('resOrder').innerText = order;
             document.getElementById('alertBox').style.backgroundColor = bgColor;
             document.getElementById('customAlert').style.display = 'flex';
-            
-            setTimeout(closeAlert, 4000); // 정보가 많아졌으므로 4초 유지
+            setTimeout(closeAlert, 4000);
         }
 
         function closeAlert() {
