@@ -13,66 +13,43 @@
             display: flex; justify-content: center; align-items: center; 
             height: 100vh; margin: 0; background-color: #f4f7fa; 
         }
-
         .container { width: 85%; max-width: 320px; text-align: center; }
-
-        .instruction-text {
-            font-size: 20px; color: #2c3e50; font-weight: 700;
-            margin-bottom: 20px; letter-spacing: -0.5px;
-        }
-
+        .instruction-text { font-size: 20px; color: #2c3e50; font-weight: 700; margin-bottom: 20px; }
         input[type="text"] {
-            width: 100%; padding: 18px; margin-bottom: 15px;
-            border: 1px solid #ddd; border-radius: 15px;
-            box-sizing: border-box; font-size: 22px;
+            width: 100%; padding: 18px; margin-bottom: 15px; border: 1px solid #ddd; 
+            border-radius: 15px; box-sizing: border-box; font-size: 22px;
             text-align: center; background-color: white; outline: none;
             font-weight: 800; color: #1e2a5a;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
         }
-
         .search-btn {
-            width: 100%; padding: 16px;
-            background-color: #1e2a5a; color: white;
-            border: none; border-radius: 15px;
-            font-size: 1.1rem; font-weight: 600; cursor: pointer;
-            box-shadow: 0 4px 12px rgba(30, 42, 90, 0.2);
+            width: 100%; padding: 16px; background-color: #1e2a5a; color: white;
+            border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
         }
 
-        /* 커스텀 팝업 스타일 */
+        /* 결과 팝업 */
         #customAlert {
             display: none; position: fixed; top: 0; left: 0; 
             width: 100%; height: 100%; background: rgba(0,0,0,0.4);
             justify-content: center; align-items: center; z-index: 1000;
         }
         .alert-content {
-            width: 85%; max-width: 280px;
-            padding: 40px 20px; border-radius: 25px; text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            animation: fadeIn 0.3s; color: white;
+            width: 85%; max-width: 280px; padding: 40px 20px; border-radius: 25px; 
+            text-align: center; animation: fadeIn 0.3s; color: white;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* 최상단 전체 번호 스타일 */
         .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 12px; display: block; }
-        /* 아래 안내 문구 스타일 */
-        .res-msg { font-size: 22px; font-weight: 500; display: block; opacity: 0.9; }
+        .res-msg { font-size: 22px; font-weight: 500; display: block; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="instruction-text">차량번호를 입력해주세요</div>
-        
-        <input type="text" 
-               inputmode="numeric" 
-               pattern="[0-9]*" 
-               placeholder="번호 4자리" 
-               id="carNumberInput"
-               maxlength="4"
+        <input type="text" inputmode="numeric" placeholder="번호 4자리" id="carNumberInput" maxlength="4"
                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
-        
         <button class="search-btn" onclick="runSearch()">조회하기</button>
     </div>
 
@@ -86,45 +63,35 @@
     <script>
         let carData = [];
 
-        // 페이지 로드 시 carDB.json 불러오기
+        // 데이터 로드: carDB.json 항목명 매칭 확인
         fetch('carDB.json')
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 carData = data;
-                console.log("데이터 로드 완료");
+                console.log("데이터 로드 완료:", carData.length, "건");
             })
-            .catch(error => console.error('데이터를 불러오는데 실패했습니다:', error));
+            .catch(err => alert("파일을 찾을 수 없습니다 (carDB.json 확인 필요)"));
 
         function runSearch() {
             const inputVal = document.getElementById('carNumberInput').value;
-            
-            if(inputVal.length < 4) {
-                alert("차량번호 4자리를 모두 입력해주세요.");
-                return;
-            }
+            if(inputVal.length < 4) return;
 
-            // 검색: 차량번호for와 입력값 비교
-            const foundCar = carData.find(car => String(car.차량번호for).trim() === inputVal);
+            // [핵심 수정] 업로드하신 파일에 맞게 car_number_for 로 검색합니다.
+            const foundCar = carData.find(car => String(car.car_number_for).trim() === inputVal);
 
             if(foundCar) {
-                // 전체 번호를 최상단에, 메시지를 아래에 표시
-                showResult(foundCar.차량번호All, "입주민 차량입니다.", "#1DDB16");
+                // [핵심 수정] car_number_all 값을 최상단에 표시합니다.
+                showResult(foundCar.car_number_all, "입주민 차량입니다.", "#1DDB16");
             } else {
-                showResult("정보 없음", "미등록 차량입니다.", "#FF3636");
+                showResult("미등록", "등록되지 않은 차량입니다.", "#FF3636");
             }
         }
 
         function showResult(fullNum, msg, bgColor) {
-            const alertContainer = document.getElementById('customAlert');
-            const alertBox = document.getElementById('alertBox');
-            
             document.getElementById('resFullNum').innerText = fullNum;
             document.getElementById('resMsg').innerText = msg;
-            alertBox.style.backgroundColor = bgColor;
-
-            alertContainer.style.display = 'flex';
-
-            // 3.5초 후 자동 닫기 (가독성을 위해 약간 늘림)
+            document.getElementById('alertBox').style.backgroundColor = bgColor;
+            document.getElementById('customAlert').style.display = 'flex';
             setTimeout(closeAlert, 3500);
         }
 
@@ -133,6 +100,5 @@
             document.getElementById('carNumberInput').value = ""; 
         }
     </script>
-
 </body>
 </html>
