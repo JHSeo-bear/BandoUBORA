@@ -3,67 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>주차관리 - 조회</title>
+    <title>주차관리 - 차량조회</title>
+    <link rel="apple-touch-icon" href="apticon.png">
+    <link rel="icon" type="image/png" href="apticon.png">
+    
     <style>
+        /* 배경 및 전체 레이아웃 */
         body { 
             font-family: -apple-system, sans-serif; 
             display: flex; justify-content: center; align-items: center; 
             height: 100vh; margin: 0; background-color: #f4f7fa; 
         }
-        .login-box { 
-            width: 85%; max-width: 320px; padding: 40px 20px;
-            background: white; border-radius: 25px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08); text-align: center;
-        }
-        .lock-img { width: 70px; height: auto; margin-bottom: 15px; display: block; margin: 0 auto 15px auto; }
 
-        /* 30px로 확대한 차량번호 조회 타이틀 */
-        h2 { 
-            font-size: 30px; color: #2c3e50; margin-bottom: 30px; 
-            margin-top: 0; font-weight: 700; letter-spacing: -1px;
-            display: block; /* 확실히 보이게 처리 */
+        /* 입력창이 담긴 박스 */
+        .container { 
+            width: 85%; max-width: 320px; text-align: center; 
         }
 
-        input[type="password"] {
-            width: 100%; padding: 16px; margin-bottom: 15px;
-            border: 1px solid #eee; border-radius: 12px;
-            box-sizing: border-box; font-size: 16px;
-            text-align: center; background-color: #f9f9f9; outline: none;
+        /* 상단 안내 문구 */
+        .instruction-text {
+            font-size: 20px; color: #2c3e50; font-weight: 700;
+            margin-bottom: 20px; letter-spacing: -0.5px;
         }
-        .login-btn {
+
+        /* 차량번호 입력칸 (index 비밀번호 스타일) */
+        input[type="text"] {
+            width: 100%; padding: 18px; margin-bottom: 15px;
+            border: 1px solid #ddd; border-radius: 15px;
+            box-sizing: border-box; font-size: 22px;
+            text-align: center; background-color: white; outline: none;
+            font-weight: 800; color: #1e2a5a;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        /* 확인 버튼 */
+        .search-btn {
             width: 100%; padding: 16px;
             background-color: #1e2a5a; color: white;
-            border: none; border-radius: 12px;
-            font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 35px;
+            border: none; border-radius: 15px;
+            font-size: 1.1rem; font-weight: 600; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(30, 42, 90, 0.2);
         }
-        .brand-logo { width: 150px; height: auto; display: block; margin: 0 auto 10px auto; }
-        .office-text { font-size: 0.95rem; color: #555; font-weight: 500; }
+
+        .search-btn:active { transform: scale(0.98); opacity: 0.9; }
     </style>
 </head>
 <body>
 
-    <div class="login-box">
-        <img src="Security.png" alt="Security" class="lock-img">
-
-        <h2>차량번호 조회</h2>
+    <div class="container">
+        <div class="instruction-text">차량번호를 입력해주세요</div>
         
-        <input type="password" 
+        <input type="text" 
                inputmode="numeric" 
                pattern="[0-9]*" 
-               placeholder="번호 4자리를 입력하세요" 
-               id="pwField"
+               placeholder="번호 4자리" 
+               id="carNumberInput"
                maxlength="4"
                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
         
-        <button class="login-btn" onclick="validate()">조회</button>
-        
-        <img src="login.png" alt="로고" class="brand-logo">
-        <div class="office-text">오창반도유보라 관리사무소</div>
+        <button class="search-btn" onclick="runSearch()">조회하기</button>
     </div>
 
     <script>
-        function validate() {
-            alert("조회 기능을 준비 중입니다.");
+        function runSearch() {
+            const val = document.getElementById('carNumberInput').value;
+            if(val.length < 4) {
+                alert("차량번호 4자리를 모두 입력해주세요.");
+                return;
+            }
+            // 여기에 이제 데이터(carDB.json)를 매칭하는 로직을 넣을 예정입니다.
+            console.log("조회 시도 번호:", val);
         }
     </script>
 
