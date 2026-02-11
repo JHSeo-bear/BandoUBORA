@@ -26,13 +26,23 @@
         .alert-content {
             width: 85%; max-width: 280px; padding: 40px 20px; border-radius: 25px; 
             text-align: center; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            transition: background-color 0.3s ease; /* 색상 변경 시 부드럽게 */
+            transition: background-color 0.3s ease;
         }
         .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
         .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
         
-        /* 요청사항 반영: 글자크기 30px, 투명도 1 (선명하게) */
+        /* 순번 텍스트: 30px, 선명하게 */
         .res-order { font-size: 30px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
+        
+        /* [추가] 가로 분리선 및 주차위반 이력 스타일 */
+        .res-error { 
+            font-size: 18px; 
+            font-weight: 600; 
+            display: block; 
+            margin-top: 20px; 
+            padding-top: 15px; 
+            border-top: 1px solid rgba(255, 255, 255, 0.5); /* 얇은 가로 분리선 */
+        }
     </style>
 </head>
 <body>
@@ -49,17 +59,23 @@
             <div id="resFullNum" class="res-full-num"></div>
             <div id="resMsg" class="res-msg"></div>
             <div id="resOrder" class="res-order"></div>
-        </div>
+            <div id="resError" class="res-error"></div> </div>
     </div>
 
     <script>
         let carData = [];
-        let alertTimer = null; // 타이머 중복 방지 변수
+        let errorData = []; 
+        let alertTimer = null;
 
-        fetch('carDB.json')
-            .then(res => res.json())
-            .then(data => { carData = data; })
-            .catch(err => console.error("데이터 로드 실패"));
+        // 데이터 로드
+        Promise.all([
+            fetch('carDB.json').then(res => res.json()),
+            fetch('err.json').then(res => res.json())
+        ]).then(([cars, errors]) => {
+            carData = cars;
+            errorData = errors;
+            console.log("데이터 로드 완료");
+        }).catch(err => console.error("데이터 로드 실패"));
 
         function runSearch() {
             const inputVal = document.getElementById('carNumberInput').value;
@@ -69,33 +85,43 @@
 
             if(foundCar) {
                 const order = foundCar.registration_order;
-                const orderText = `[${order}] 순번 차량입니다.`;
+                const fullNum = foundCar.car_number_all;
+                const orderText = `[${order}] 순번 등록차량입니다.`;
                 
-                // 순번별 색상 지정
-                let bgColor = "#1DDB16"; // 기본 초록색 (2순번 포함)
-                if (order === 1) bgColor = "#368AFF";      // 1순번: 파랑
-                else if (order === 3) bgColor = "#FFBB00"; // 3순번: 노랑
-                else if (order === 4) bgColor = "#FF00DD"; // 4순번: 핑크
+                // err.json에서 위반 횟수 매칭
+                const violationRecord = errorData.find(err => err.차량번호 === fullNum);
+                const violationCount = violationRecord ? violationRecord.위반횟수 : 0;
+                const errorText = `주차규정 위반횟수 [${violationCount}]회`;
 
-                // 입주민 차량은 2초 (2000ms)
-                showResult(foundCar.car_number_all, "입주민 차량입니다.", orderText, bgColor, 2000);
+                let bgColor = "#1DDB16"; 
+                if (order === 1) bgColor = "#368AFF";      
+                else if (order === 3) bgColor = "#FFBB00"; 
+                else if (order === 4) bgColor = "#FF00DD"; 
+
+                showResult(fullNum, "입주민 차량입니다.", orderText, errorText, bgColor, 2000);
             } else {
-                // 미등록 차량은 3초 (3000ms)
-                showResult("미등록 차량입니다.", "방문차량정보를 확인해주세요.", "", "#FF3636", 3000);
+                showResult("미등록", "등록되지 않은 차량입니다.", "", "", "#FF3636", 3000);
             }
         }
 
-        function showResult(fullNum, msg, order, bgColor, duration) {
-            // 새 조회를 할 때 기존에 작동하던 타이머가 있다면 취소 (팝업 꼬임 방지)
+        function showResult(fullNum, msg, order, error, bgColor, duration) {
             if(alertTimer) clearTimeout(alertTimer);
 
             document.getElementById('resFullNum').innerText = fullNum;
             document.getElementById('resMsg').innerText = msg;
             document.getElementById('resOrder').innerText = order;
+            
+            const errorEl = document.getElementById('resError');
+            if (error) {
+                errorEl.innerText = error;
+                errorEl.style.display = "block";
+            } else {
+                errorEl.style.display = "none";
+            }
+
             document.getElementById('alertBox').style.backgroundColor = bgColor;
             document.getElementById('customAlert').style.display = 'flex';
             
-            // 설정된 시간(duration) 후 팝업 닫기
             alertTimer = setTimeout(closeAlert, duration);
         }
 
