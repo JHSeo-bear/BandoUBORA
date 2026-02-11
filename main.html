@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>주차관리 - 차량조회</title>
+
+    <link rel="apple-touch-icon" href="apticon.png">
+    <link rel="icon" type="image/png" href="apticon.png">
+    <meta name="theme-color" content="#1e2a5a">
+
     <style>
         body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7fa; }
         .container { width: 85%; max-width: 320px; text-align: center; }
@@ -94,22 +99,17 @@
             const inputVal = document.getElementById('carNumberInput').value;
             if(inputVal.length < 4) return;
 
-            // 1. 일치하는 모든 차량 필터링
             const matches = carData.filter(car => String(car.car_number_for).trim() === inputVal);
 
             if (matches.length > 1) {
-                // 중복 차량이 있을 경우 목록 표시
                 showSelectionList(matches);
             } else if (matches.length === 1) {
-                // 한 대일 경우 바로 팝업
                 processSelection(matches[0]);
             } else {
-                // 미등록 차량
                 showResult("미등록차량 입니다.", "방문차량정보를 확인해주세요.", "", "", "#FF3636", 3000);
             }
         }
 
-        // 중복 목록 생성 및 표시
         function showSelectionList(cars) {
             const listEl = document.getElementById('carList');
             listEl.innerHTML = '';
@@ -126,7 +126,6 @@
             document.getElementById('selectionBox').style.display = 'flex';
         }
 
-        // 선택된 차량 정보 처리
         function processSelection(car) {
             const order = car.registration_order;
             const fullNum = car.car_number_all.trim();
@@ -154,10 +153,7 @@
             document.getElementById('resOrder').innerText = order;
             
             const errorEl = document.getElementById('resError');
-            if (error && error.includes("[") && !error.includes("[0]회")) {
-                errorEl.innerText = error;
-                errorEl.style.display = "block";
-            } else if (error && error.includes("[0]회")) {
+            if (error) {
                 errorEl.innerText = error;
                 errorEl.style.display = "block";
             } else {
