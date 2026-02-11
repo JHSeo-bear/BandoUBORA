@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>관리자 로그인</title>
+    
+    <title>주차관리</title>
+    <link rel="apple-touch-icon" href="apticon.png">
+    <link rel="icon" type="image/png" href="apticon.png">
+    <meta name="apple-mobile-web-app-title" content="주차관리">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style>
         body { 
             font-family: -apple-system, sans-serif; 
@@ -41,14 +48,12 @@
             width: 150px; 
             height: auto;
             display: block;
-            margin: 0 auto 10px auto; /* 로고 아래 10px 여백 */
+            margin: 0 auto 10px auto;
         }
-        /* 추가된 텍스트 스타일 */
         .office-text {
             font-size: 0.95rem;
             color: #555;
             font-weight: 500;
-            letter-spacing: -0.5px;
         }
     </style>
 </head>
@@ -60,7 +65,6 @@
         <button class="login-btn" onclick="validate()">확인</button>
         
         <img src="login.png" alt="로고" class="brand-logo">
-        
         <div class="office-text">오창반도유보라 관리사무소</div>
     </div>
 
@@ -69,6 +73,7 @@
             const pw = document.getElementById('pwField').value;
             if(pw === "1257") {
                 alert("반갑습니다, 관리자님!");
+                // 로그인 성공 후 메인 페이지로 이동 로직 예정
             } else {
                 alert("비밀번호가 올바르지 않습니다.");
                 document.getElementById('pwField').value = "";
