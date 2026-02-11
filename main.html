@@ -14,8 +14,23 @@
     <meta name="apple-mobile-web-app-title" content="주차관리">
 
     <style>
-        body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7fa; }
-        .container { width: 85%; max-width: 320px; text-align: center; }
+        /* 화면 정중앙 배치에서 위로 약간 올리기 위해 margin-bottom 추가 */
+        body { 
+            font-family: -apple-system, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            background-color: #f4f7fa; 
+        }
+        .container { 
+            width: 85%; 
+            max-width: 320px; 
+            text-align: center; 
+            /* 중앙보다 약간 위로 올리기 위한 설정 (숫자가 클수록 더 위로 올라갑니다) */
+            margin-bottom: 20vh; 
+        }
         .instruction-text { font-size: 20px; color: #2c3e50; font-weight: 700; margin-bottom: 20px; }
         input[type="text"] {
             width: 100%; padding: 18px; margin-bottom: 15px; border: 1px solid #ddd; 
@@ -125,11 +140,21 @@
             }
         }
 
+        // --- 앱 실행 로직 강화 (최종 추천 코드) ---
         function launchOitok() {
-            const packageName = "net.gntalk.parkingmanager"; 
-            // 시스템에 해당 패키지 실행을 강제하는 표준 인텐트 구조입니다.
-            const intentUri = `intent://scan#Intent;scheme=oitok;package=${packageName};action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;end`;
+            const packageName = "net.gntalk.parkingmanager";
+            const intentUri = `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${packageName};end`;
+            
             location.href = intentUri;
+
+            setTimeout(() => {
+                if (document.visibilityState === 'visible') {
+                    const check = confirm("앱이 실행되지 않았나요?\n수동 실행을 위해 확인을 누르시면 마켓 페이지로 이동합니다.\n(마켓에서 '열기'를 누르면 즉시 실행됩니다.)");
+                    if(check) {
+                        location.href = `market://details?id=${packageName}`;
+                    }
+                }
+            }, 1500);
         }
 
         function showSelectionList(cars) {
@@ -152,7 +177,6 @@
             const order = car.registration_order;
             const fullNum = car.car_number_all.trim();
             const orderText = `[${order}] 순번 등록차량입니다.`;
-            
             const targetNum = fullNum.replace(/\s+/g, "");
             const violationCount = errorData.filter(err => 
                 String(err.차량번호 || "").replace(/\s+/g, "") === targetNum
