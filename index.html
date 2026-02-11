@@ -2,56 +2,87 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오창반도유보라 프로젝트</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>관리자 로그인 - 오창반도유보라</title>
     <style>
         body { 
-            font-family: 'Pretendard', sans-serif; 
+            font-family: -apple-system, sans-serif; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            min-height: 100vh; 
+            height: 100vh; 
             margin: 0; 
-            background-color: #f0f2f5; 
-            padding: 20px; /* 모바일 여백 */
+            background-color: #f4f7fa; 
         }
-        .container { 
-            width: 100%;
-            max-width: 400px; /* 모바일에서 보기 적당한 너비 */
-            text-align: center; 
+        .login-box { 
+            width: 80%;
+            max-width: 320px; 
+            padding: 40px 20px;
             background: white; 
-            padding: 2.5rem 1.5rem; 
             border-radius: 20px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
         }
-        h1 { 
-            color: #1a73e8; 
-            font-size: 1.5rem; /* 모바일에서 적당한 제목 크기 */
-            margin-bottom: 1rem;
-            word-break: keep-all; /* 단어 단위로 줄바꿈 */
+        h2 { 
+            font-size: 1.2rem;
+            color: #2c3e50; 
+            margin-bottom: 30px;
+            letter-spacing: -0.5px;
         }
-        p { 
-            color: #5f6368;
-            font-size: 1.1rem;
-            line-height: 1.6;
+        input[type="password"] {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 16px; /* 아이폰 자동 줌 방지 */
+            text-align: center;
+            background-color: #f9f9f9;
         }
-        .btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 24px;
-            background-color: #1a73e8;
+        input::placeholder {
+            color: #aaa;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #007bff;
             color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🏢 오창반도유보라<br>프로젝트 시작</h1>
-        <p>모바일 최적화 배포 완료!</p>
-        <a href="#" class="btn">자세히 보기</a>
+
+    <div class="login-box">
+        <h2>관리자 로그인</h2>
+        <input type="password" 
+               inputmode="numeric" 
+               pattern="[0-9]*"
+               placeholder="비밀번호를 입력하세요" 
+               id="pwField">
+        <button class="login-btn" onclick="validate()">확인</button>
     </div>
+
+    <script>
+        function validate() {
+            const pw = document.getElementById('pwField').value;
+            
+            // 비밀번호 1257 체크
+            if(pw === "1257") {
+                alert("반갑습니다, 관리자님!");
+                // 로그인 성공 후 이동할 주소를 아래에 넣을 수 있습니다.
+                // window.location.href = "admin_main.html"; 
+            } else {
+                alert("비밀번호가 올바르지 않습니다.");
+                document.getElementById('pwField').value = ""; // 입력창 초기화
+            }
+        }
+    </script>
+
 </body>
 </html>
