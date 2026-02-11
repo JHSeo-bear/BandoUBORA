@@ -51,7 +51,8 @@
         .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
         .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
         .res-order { font-size: 25px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
-        .res-error { font-size: 18px; font-weight: 600; display: block; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.5); }
+        /* 아래 font-size를 18px에서 25px로 변경했습니다. */
+        .res-error { font-size: 25px; font-weight: 600; display: block; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.5); }
 
         .oitok-run-btn {
             display: none; margin-top: 25px; padding: 15px; 
@@ -160,13 +161,11 @@
             const fullNum = car.car_number_all.trim();
             const orderText = `[${order}] 순번 등록차량입니다.`;
             
-            // 1. 위반 횟수 계산 (공백 제거 후 비교)
             const targetNum = fullNum.replace(/\s+/g, "");
             const violationCount = errorData.filter(err => 
                 String(err.차량번호 || "").replace(/\s+/g, "") === targetNum
             ).length;
             
-            // 2. 0회라도 반드시 표시하도록 수정
             const errorText = `주차규정 위반횟수 [${violationCount}]회`;
 
             let bgColor = "#1DDB16"; 
@@ -188,7 +187,6 @@
             if (error) {
                 errorEl.innerText = error;
                 errorEl.style.display = "block";
-                // 위반 횟수가 0회이면 흰색 투명도, 1회 이상이면 더 강조하거나 그대로 유지
                 errorEl.style.color = error.includes("[0]회") ? "rgba(255,255,255,0.8)" : "white";
             } else {
                 errorEl.style.display = "none";
