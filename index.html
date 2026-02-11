@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>관리자 로그인 - 오창반도유보라</title>
+    <title>관리자 로그인</title>
     <style>
         body { 
             font-family: -apple-system, sans-serif; 
@@ -15,44 +15,52 @@
             background-color: #f4f7fa; 
         }
         .login-box { 
-            width: 80%;
+            width: 85%;
             max-width: 320px; 
             padding: 40px 20px;
             background: white; 
-            border-radius: 20px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-radius: 25px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
             text-align: center;
         }
         h2 { 
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             color: #2c3e50; 
             margin-bottom: 30px;
-            letter-spacing: -0.5px;
+            font-weight: 700;
         }
+        /* 비밀번호 입력창 */
         input[type="password"] {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             margin-bottom: 15px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #eee;
             border-radius: 12px;
             box-sizing: border-box;
-            font-size: 16px; /* 아이폰 자동 줌 방지 */
+            font-size: 16px;
             text-align: center;
             background-color: #f9f9f9;
+            outline: none;
         }
-        input::placeholder {
-            color: #aaa;
-        }
+        /* 확인 버튼 */
         .login-btn {
             width: 100%;
-            padding: 15px;
-            background-color: #007bff;
+            padding: 16px;
+            background-color: #1e2a5a; /* 유보라 로고 톤 */
             color: white;
             border: none;
             border-radius: 12px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
+            margin-bottom: 35px;
+        }
+        /* 로고 스타일 */
+        .brand-logo {
+            width: 150px; /* 로고 크기 적절히 조절 */
+            height: auto;
+            display: block;
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -65,21 +73,21 @@
                pattern="[0-9]*"
                placeholder="비밀번호를 입력하세요" 
                id="pwField">
+        
         <button class="login-btn" onclick="validate()">확인</button>
+        
+        <img src="login.png" alt="UBORA Logo" class="brand-logo">
     </div>
 
     <script>
         function validate() {
             const pw = document.getElementById('pwField').value;
-            
-            // 비밀번호 1257 체크
             if(pw === "1257") {
                 alert("반갑습니다, 관리자님!");
-                // 로그인 성공 후 이동할 주소를 아래에 넣을 수 있습니다.
-                // window.location.href = "admin_main.html"; 
+                // 로그인 후 이동할 로직을 여기에 추가
             } else {
                 alert("비밀번호가 올바르지 않습니다.");
-                document.getElementById('pwField').value = ""; // 입력창 초기화
+                document.getElementById('pwField').value = "";
             }
         }
     </script>
