@@ -5,129 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>주차관리</title>
 
-    <link rel="manifest" href="manifest.json">
-
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="주차관리">
-    <link rel="apple-touch-icon" href="apticon.png?v=3">
-
-    <link rel="icon" type="image/png" href="apticon.png?v=3">
+    <link rel="apple-touch-icon" href="apticon.png?v=1">
+    <link rel="icon" type="image/png" href="apticon.png?v=1">
     <meta name="theme-color" content="#1e2a5a">
-    
+    <meta name="apple-mobile-web-app-title" content="주차관리">
+
     <style>
-        body { 
-            font-family: -apple-system, sans-serif; 
-            display: flex; justify-content: center; align-items: center; 
-            height: 100vh; margin: 0; background-color: #f4f7fa; 
-            overflow: hidden; /* 어플 느낌을 위해 스크롤 방지 */
+        body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7fa; }
+        .container { width: 85%; max-width: 320px; text-align: center; }
+        .instruction-text { font-size: 20px; color: #2c3e50; font-weight: 700; margin-bottom: 20px; }
+        input[type="text"] {
+            width: 100%; padding: 18px; margin-bottom: 15px; border: 1px solid #ddd; 
+            border-radius: 15px; box-sizing: border-box; font-size: 22px;
+            text-align: center; background-color: white; outline: none; font-weight: 800; color: #1e2a5a;
         }
-        .login-box { 
-            width: 85%; max-width: 320px; padding: 40px 20px;
-            background: white; border-radius: 25px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08); text-align: center;
-        }
-        
-        .lock-img {
-            width: 70px; height: auto; margin-bottom: 15px;
-            display: block; margin-left: auto; margin-right: auto;
+        .search-btn {
+            width: 100%; padding: 16px; background-color: #1e2a5a; color: white;
+            border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
         }
 
-        h2 { 
-            font-size: 30px; color: #2c3e50; margin-bottom: 30px; 
-            margin-top: 0; font-weight: 700; letter-spacing: -1px;
+        /* 중복 선택 목록 */
+        #selectionBox {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.95); z-index: 1100; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .select-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #1e2a5a; }
+        .car-list { width: 80%; max-width: 300px; list-style: none; padding: 0; margin: 0; }
+        .car-item { 
+            background: #fff; border: 2px solid #1e2a5a; border-radius: 15px; 
+            padding: 15px; margin-bottom: 10px; font-size: 18px; font-weight: 700; 
+            text-align: center; cursor: pointer; color: #1e2a5a;
         }
 
-        input[type="password"] {
-            width: 100%; padding: 16px; margin-bottom: 15px;
-            border: 1px solid #eee; border-radius: 12px;
-            box-sizing: border-box; font-size: 16px;
-            text-align: center; background-color: #f9f9f9; outline: none;
-        }
-        .login-btn {
-            width: 100%; padding: 16px;
-            background-color: #1e2a5a; color: white;
-            border: none; border-radius: 12px;
-            font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 35px;
-        }
-        .brand-logo { width: 150px; height: auto; display: block; margin: 0 auto 10px auto; }
-        .office-text { font-size: 0.95rem; color: #555; font-weight: 500; }
-
+        /* 결과 팝업 */
         #customAlert {
-            display: none; position: fixed; top: 0; left: 0; 
-            width: 100%; height: 100%; background: rgba(0,0,0,0.4);
-            justify-content: center; align-items: center; z-index: 1000;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000;
         }
         .alert-content {
-            width: 75%; max-width: 260px;
-            padding: 30px 20px; border-radius: 20px; text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            animation: fadeIn 0.3s;
+            width: 85%; max-width: 280px; padding: 40px 20px; border-radius: 25px; 
+            text-align: center; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .alert-msg { font-size: 1.1rem; color: white; font-weight: 700; line-height: 1.5; }
+        .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
+        .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
+        .res-order { font-size: 25px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
+        .res-error { font-size: 18px; font-weight: 600; display: block; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.5); }
     </style>
 </head>
 <body>
 
-    <div class="login-box">
-        <img src="Security.png" alt="Security" class="lock-img">
-        <h2>관리자 로그인</h2>
-        <input type="password" 
-               inputmode="numeric" 
-               pattern="[0-9]*" 
-               placeholder="비밀번호를 입력하세요" 
-               id="pwField"
-               maxlength="4"
+    <div class="container">
+        <div class="instruction-text">차량번호를 입력해주세요</div>
+        <input type="text" inputmode="numeric" placeholder="번호 4자리" id="carNumberInput" maxlength="4"
                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
-        
-        <button class="login-btn" onclick="validate()">확인</button>
-        
-        <img src="login.png" alt="로고" class="brand-logo">
-        <div class="office-text">오창반도유보라 관리사무소</div>
+        <button class="search-btn" onclick="runSearch()">조회하기</button>
     </div>
 
-    <div id="customAlert">
+    <div id="selectionBox">
+        <div class="select-title">해당하는 차량을 선택하세요</div>
+        <ul id="carList" class="car-list"></ul>
+    </div>
+
+    <div id="customAlert" onclick="closeAlert()">
         <div id="alertBox" class="alert-content">
-            <div id="alertMsg" class="alert-msg"></div>
+            <div id="resFullNum" class="res-full-num"></div>
+            <div id="resMsg" class="res-msg"></div>
+            <div id="resOrder" class="res-order"></div>
+            <div id="resError" class="res-error"></div>
         </div>
     </div>
 
     <script>
-        function showAutoAlert(msg) {
-            const alertContainer = document.getElementById('customAlert');
-            const alertBox = document.getElementById('alertBox');
-            const alertMsg = document.getElementById('alertMsg');
-            const pwInput = document.getElementById('pwField');
+        let carData = [];
+        let errorData = []; 
+        let alertTimer = null;
 
-            alertMsg.innerText = msg;
-            alertBox.style.backgroundColor = '#FFBB00'; 
-
-            alertContainer.style.display = 'flex';
-            pwInput.value = "";
-
-            setTimeout(() => {
-                alertContainer.style.display = 'none';
-            }, 2000);
+        // 데이터 로드
+        async function loadData() {
+            try {
+                const [carRes, errRes] = await Promise.all([
+                    fetch('carDB.json'),
+                    fetch('err.json')
+                ]);
+                carData = await carRes.json();
+                errorData = await errRes.json();
+            } catch (err) {
+                console.error("데이터 로딩 실패:", err);
+            }
         }
+        loadData();
 
-        function validate() {
-            const pw = document.getElementById('pwField').value;
-            
-            if(pw === "1257") {
-                // 성공 시 메인 조회 페이지로 이동
-                window.location.replace("main.html");
+        function runSearch() {
+            const inputVal = document.getElementById('carNumberInput').value;
+            if(inputVal.length < 4) return;
+
+            const matches = carData.filter(car => String(car.car_number_for).trim() === inputVal);
+
+            if (matches.length > 1) {
+                showSelectionList(matches);
+            } else if (matches.length === 1) {
+                processSelection(matches[0]);
             } else {
-                showAutoAlert("비밀번호를 다시 확인해주세요!");
+                showResult("미등록차량 입니다.", "방문차량정보를 확인해주세요.", "", "", "#FF3636", 3000);
             }
         }
 
-        document.getElementById('pwField').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') validate();
-        });
+        function showSelectionList(cars) {
+            const listEl = document.getElementById('carList');
+            listEl.innerHTML = '';
+            cars.forEach(car => {
+                const li = document.createElement('li');
+                li.className = 'car-item';
+                li.innerText = car.car_number_all;
+                li.onclick = () => {
+                    document.getElementById('selectionBox').style.display = 'none';
+                    processSelection(car);
+                };
+                listEl.appendChild(li);
+            });
+            document.getElementById('selectionBox').style.display = 'flex';
+        }
+
+        function processSelection(car) {
+            const order = car.registration_order;
+            const fullNum = car.car_number_all.trim();
+            const orderText = `[${order}] 순번 등록차량입니다.`;
+            
+            // [집계 핵심 로직] err.json 배열에서 해당 차량번호가 나타난 횟수(개수)를 직접 셉니다.
+            const violationCount = errorData.filter(err => String(err.차량번호).trim() === fullNum).length;
+            const errorText = `주차규정 위반횟수 [${violationCount}]회`;
+
+            let bgColor = "#1DDB16"; 
+            if (order === 1) bgColor = "#368AFF";      
+            else if (order === 3) bgColor = "#FFBB00"; 
+            else if (order === 4) bgColor = "#FF00DD"; 
+
+            showResult(fullNum, "입주민 차량입니다.", orderText, errorText, bgColor, 2000);
+        }
+
+        function showResult(fullNum, msg, order, error, bgColor, duration) {
+            if(alertTimer) clearTimeout(alertTimer);
+            document.getElementById('resFullNum').innerText = fullNum;
+            document.getElementById('resMsg').innerText = msg;
+            document.getElementById('resOrder').innerText = order;
+            const errorEl = document.getElementById('resError');
+            errorEl.innerText = error;
+            errorEl.style.display = error ? "block" : "none";
+            document.getElementById('alertBox').style.backgroundColor = bgColor;
+            document.getElementById('customAlert').style.display = 'flex';
+            alertTimer = setTimeout(closeAlert, duration);
+        }
+
+        function closeAlert() {
+            if(alertTimer) clearTimeout(alertTimer);
+            document.getElementById('customAlert').style.display = 'none';
+            document.getElementById('carNumberInput').value = ""; 
+        }
     </script>
 </body>
 </html>
