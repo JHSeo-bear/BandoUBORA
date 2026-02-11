@@ -30,18 +30,16 @@
         }
         .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
         .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
-        
-        /* 순번 텍스트: 30px, 선명하게 */
         .res-order { font-size: 30px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
         
-        /* [추가] 가로 분리선 및 주차위반 이력 스타일 */
+        /* 분리선 및 위반횟수 스타일 */
         .res-error { 
             font-size: 18px; 
             font-weight: 600; 
             display: block; 
             margin-top: 20px; 
             padding-top: 15px; 
-            border-top: 1px solid rgba(255, 255, 255, 0.5); /* 얇은 가로 분리선 */
+            border-top: 1px solid rgba(255, 255, 255, 0.5); 
         }
     </style>
 </head>
@@ -59,7 +57,8 @@
             <div id="resFullNum" class="res-full-num"></div>
             <div id="resMsg" class="res-msg"></div>
             <div id="resOrder" class="res-order"></div>
-            <div id="resError" class="res-error"></div> </div>
+            <div id="resError" class="res-error"></div>
+        </div>
     </div>
 
     <script>
@@ -67,30 +66,41 @@
         let errorData = []; 
         let alertTimer = null;
 
-        // 데이터 로드
-        Promise.all([
-            fetch('carDB.json').then(res => res.json()),
-            fetch('err.json').then(res => res.json())
-        ]).then(([cars, errors]) => {
-            carData = cars;
-            errorData = errors;
-            console.log("데이터 로드 완료");
-        }).catch(err => console.error("데이터 로드 실패"));
+        // 데이터를 확실히 다 불러온 후 실행되도록 Promise 처리 보강
+        async function loadData() {
+            try {
+                const [carRes, errRes] = await Promise.all([
+                    fetch('carDB.json'),
+                    fetch('err.json')
+                ]);
+                carData = await carRes.json();
+                errorData = await errRes.json();
+                console.log("데이터 로드 완료: ", carData.length, "건 / 위반이력: ", errorData.length, "건");
+            } catch (err) {
+                console.error("파일 로드 오류:", err);
+                alert("데이터 파일을 읽어오지 못했습니다. 파일명을 확인해주세요.");
+            }
+        }
+        loadData();
 
         function runSearch() {
             const inputVal = document.getElementById('carNumberInput').value;
             if(inputVal.length < 4) return;
 
+            // 1. 차량 찾기
             const foundCar = carData.find(car => String(car.car_number_for).trim() === inputVal);
 
             if(foundCar) {
                 const order = foundCar.registration_order;
-                const fullNum = foundCar.car_number_all;
+                const fullNum = foundCar.car_number_all.trim(); // 공백 제거
                 const orderText = `[${order}] 순번 등록차량입니다.`;
                 
-                // err.json에서 위반 횟수 매칭
-                const violationRecord = errorData.find(err => err.차량번호 === fullNum);
-                const violationCount = violationRecord ? violationRecord.위반횟수 : 0;
+                // 2. 위반 횟수 찾기 (err.json에서 차량번호 매칭)
+                // 만약 동일 번호가 여러줄이면 합산하도록 filter & reduce 사용
+                const violationCount = errorData
+                    .filter(err => String(err.차량번호).trim() === fullNum)
+                    .reduce((sum, curr) => sum + (Number(curr.위반횟수) || 0), 0);
+                
                 const errorText = `주차규정 위반횟수 [${violationCount}]회`;
 
                 let bgColor = "#1DDB16"; 
