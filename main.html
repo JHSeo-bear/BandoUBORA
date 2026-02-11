@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>오창반도유보라 주차관리</title>
+    <style>
+        body { 
+            font-family: -apple-system, sans-serif; margin: 0; 
+            background-color: white; display: flex; flex-direction: column; height: 100vh;
+            align-items: center; overflow: hidden;
+        }
+        /* 상단 타이틀 영역 */
+        .main-title {
+            text-align: center; color: #666; font-size: 26px;
+            font-weight: 700; margin: 35px 0 15px 0; line-height: 1.2;
+        }
+        /* 차량번호 표시창 */
+        .number-display {
+            width: 150px; height: 75px; background: white;
+            border: 2px solid #D1D5DB; border-radius: 12px;
+            margin-bottom: 25px; display: flex;
+            justify-content: center; align-items: center;
+            font-size: 34px; font-weight: 900; color: #34425A;
+            letter-spacing: 3px;
+        }
+        /* 숫자 키패드 (Streamlit UI 재현) */
+        .keypad {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 8px; width: 160px;
+        }
+        .key {
+            background: white; border: 1px solid #D1D5DB; border-radius: 10px;
+            font-size: 26px; font-weight: 700; color: black;
+            height: 75px; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.1s; -webkit-tap-highlight-color: transparent;
+        }
+        .key:active { background: #F3F4F6; transform: scale(0.95); }
+
+        /* 결과 알림창 (Modal) */
+        #resultModal {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal-content {
+            width: 85%; max-width: 300px; border-radius: 20px;
+            text-align: center; color: white; padding: 40px 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* 상태별 배경색 */
+        .bg-blue { background-color: #6799FF; }   /* 1순번 */
+        .bg-green { background-color: #47C83E; }  /* 2순번 */
+        .bg-orange { background-color: #FFBB00; } /* 3순번 이상 */
+        .bg-red { background-color: #FF3636; }    /* 미등록 */
+
+        .modal-allnum { font-size: 36px; margin: 0; opacity: 0.9; font-weight: 500; }
+        .modal-status { font-size: 40px; margin: 15px 0; font-weight: 900; }
+        .modal-desc { font-size: 26px; opacity: 0.9; margin: 0; }
+        .modal-penalty { font-size: 22px; font-weight: 800; margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 20px; }
+
+        .logo-bottom { margin-top: auto; margin-bottom: 20px; width: 60px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-title">오창반도유보라<br>주차관리</div>
+
+    <div class="number-display" id="display">----</div>
+
+    <div class="keypad">
+        <div class="key" onclick="addNum('1')">1</div>
+        <div class="key" onclick="addNum('2')">2</div>
+        <div class="key" onclick="addNum('3')">3</div>
+        <div class="key" onclick="addNum('4')">4</div>
+        <div class="key" onclick="addNum('5')">5</div>
+        <div class="key" onclick="addNum('6')">6</div>
+        <div class="key" onclick="addNum('7')">7</div>
+        <div class="key" onclick="addNum('8')">8</div>
+        <div class="key" onclick="addNum('9')">9</div>
+        <div class="key" onclick="resetNum()">C</div>
+        <div class="key" onclick="addNum('0')">0</div>
+        <div class="key" onclick="backspace()">🔙</div>
+    </div>
+
+    <img src="UBORA.png" alt="Logo" class="logo-bottom">
+
+    <div id="resultModal" onclick="closeModal()">
+        <div id="modalCard" class="modal-content">
+            <p id="resAllNum" class="modal-allnum"></p>
+            <div id="resStatus" class="modal-status"></div>
+            <p id="resDesc" class="modal-desc"></p>
+            <div id="resPenalty" class="modal-penalty"></div>
+        </div>
+    </div>
+
+    <script>
+        let carData = [];
+        let errorData = [];
+        let currentInput = "";
+
+        // 데이터 로딩 (carDB.json, err.json)
+        Promise.all([
+            fetch('carDB.json').then(res => res.json()),
+            fetch('err.json').then(res => res.json())
+        ]).then(([cars, errors]) => {
+            carData = cars;
+            errorData = errors;
+            console.log("DB 로드 완료");
+        }).catch(err => console.error("데이터 로드 실패:", err));
+
+        function addNum(n) {
+            if(currentInput.length < 4) {
+                currentInput += n;
+                updateDisplay();
+                if(currentInput.length === 4) {
+                    setTimeout(() => searchCar(currentInput), 150);
+                }
+            }
+        }
+
+        function resetNum() { currentInput = ""; updateDisplay(); }
+        function backspace() { currentInput = currentInput.slice(0, -1); updateDisplay(); }
+        function updateDisplay() {
+            document.getElementById('display').innerText = currentInput.padEnd(4, '-');
+        }
+
+        function searchCar(num) {
+            const results = carData.filter(car => String(car.차량번호for).trim() === num);
+            const modal = document.getElementById('resultModal');
+            const card = document.getElementById('modalCard');
+            
+            modal.style.display = 'flex';
+
+            if(results.length > 0) {
+                const res = results[0]; 
+                const seq = String(res.등록순서).trim();
+                const fullNum = res.차량번호All;
+
+                // 위반 정보 확인
+                const errRec = errorData.find(e => e.차량번호 === fullNum);
+                const penalty = errRec ? errRec.위반횟수 : 0;
+
+                document.getElementById('resAllNum').innerText = fullNum;
+                document.getElementById('resStatus').innerText = "입주민 확인";
+                document.getElementById('resDesc').innerText = `🏠 [${seq}]순번 등록차량`;
+                document.getElementById('resPenalty').innerText = `주차규정위반 횟수 : ${penalty}회`;
+                
+                if(seq === "1") card.className = 'modal-content bg-blue';
+                else if(seq === "2") card.className = 'modal-content
