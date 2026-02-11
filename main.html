@@ -27,7 +27,6 @@
             border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
         }
 
-        /* 중복 차량 선택 목록 스타일 */
         #selectionBox {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(255,255,255,0.95); z-index: 1100; flex-direction: column; align-items: center; justify-content: center;
@@ -40,7 +39,6 @@
             text-align: center; cursor: pointer; color: #1e2a5a;
         }
 
-        /* 결과 팝업 */
         #customAlert {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000;
@@ -55,7 +53,6 @@
         .res-order { font-size: 25px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
         .res-error { font-size: 18px; font-weight: 600; display: block; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.5); }
 
-        /* 오이천사 앱 실행 버튼 스타일 */
         .oitok-run-btn {
             display: none; margin-top: 25px; padding: 15px; 
             background-color: #ffffff; color: #FF3636; 
@@ -68,7 +65,7 @@
 
     <div class="container">
         <div class="instruction-text">차량번호를 입력해주세요</div>
-        <input type="text" inputmode="numeric" placeholder="번호 4자리" id="carNumberInput" maxlength="4"
+        <input type="text" inputmode="numeric" placeholder="번호 4자리" id="carNumberInput" maxlength="4" autocomplete="one-time-code"
                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
         <button class="search-btn" onclick="runSearch()">조회하기</button>
     </div>
@@ -95,7 +92,6 @@
 
         async function loadData() {
             try {
-                // 데이터 최신화를 위해 캐시 방지 처리 추가
                 const now = Date.now();
                 const [carRes, errRes] = await Promise.all([
                     fetch(`carDB.json?v=${now}`),
@@ -124,13 +120,11 @@
                 oitokBtn.style.display = 'none';
                 processSelection(matches[0]);
             } else {
-                // 미등록 차량일 때 버튼 표시
                 oitokBtn.style.display = 'block';
                 showResult("미등록차량 입니다.", "방문차량정보를 확인해주세요.", "", "", "#FF3636", 8000);
             }
         }
 
-        // 오이천사 앱 실행 함수
         function launchOitok() {
             const packageName = "net.gntalk.parkingmanager"; 
             const intentUri = `intent://#Intent;scheme=oitok;package=${packageName};end`;
@@ -166,12 +160,14 @@
             const fullNum = car.car_number_all.trim();
             const orderText = `[${order}] 순번 등록차량입니다.`;
             
-            // 수정된 위반 횟수 계산 로직: err.json 리스트에서 해당 번호의 개수(.length)를 셉니다.
+            // 1. 위반 횟수 계산 (공백 제거 후 비교)
+            const targetNum = fullNum.replace(/\s+/g, "");
             const violationCount = errorData.filter(err => 
-                String(err.차량번호).trim() === fullNum
+                String(err.차량번호 || "").replace(/\s+/g, "") === targetNum
             ).length;
             
-            const errorText = violationCount > 0 ? `주차규정 위반횟수 [${violationCount}]회` : "";
+            // 2. 0회라도 반드시 표시하도록 수정
+            const errorText = `주차규정 위반횟수 [${violationCount}]회`;
 
             let bgColor = "#1DDB16"; 
             if (order === 1) bgColor = "#368AFF";      
@@ -192,6 +188,8 @@
             if (error) {
                 errorEl.innerText = error;
                 errorEl.style.display = "block";
+                // 위반 횟수가 0회이면 흰색 투명도, 1회 이상이면 더 강조하거나 그대로 유지
+                errorEl.style.color = error.includes("[0]회") ? "rgba(255,255,255,0.8)" : "white";
             } else {
                 errorEl.style.display = "none";
             }
