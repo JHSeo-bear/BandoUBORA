@@ -3,137 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>주차관리</title>
-    <link rel="apple-touch-icon" href="apticon.png">
-    <link rel="icon" type="image/png" href="apticon.png">
-    <meta name="apple-mobile-web-app-title" content="주차관리">
-    
+    <title>오창반도유보라 주차관리</title>
     <style>
         body { 
-            font-family: -apple-system, sans-serif; 
-            display: flex; justify-content: center; align-items: center; 
-            height: 100vh; margin: 0; background-color: #f4f7fa; 
+            font-family: -apple-system, sans-serif; margin: 0; 
+            background-color: white; display: flex; flex-direction: column; height: 100vh;
+            align-items: center;
         }
-        .login-box { 
-            width: 85%; max-width: 320px; padding: 40px 20px;
-            background: white; border-radius: 25px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08); text-align: center;
+        .main-title {
+            text-align: center; color: #666; font-size: 24px;
+            font-weight: 700; margin: 20px 0 10px 0; line-height: 1.1;
         }
-        
-        /* 자물쇠 이미지 스타일 */
-        .lock-img {
-            width: 70px; /* 크기를 적절하게 조절했습니다 */
-            height: auto;
-            margin-bottom: 15px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
+        .number-display {
+            width: 140px; height: 70px; background: white;
+            border: 2px solid #D1D5DB; border-radius: 12px;
+            margin-bottom: 15px; display: flex;
+            justify-content: center; align-items: center;
+            font-size: 32px; font-weight: 900; color: #34425A;
+            letter-spacing: 2px;
         }
+        .keypad {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 4px; width: 144px; /* Streamlit 설정 폭 반영 */
+        }
+        .key {
+            background: white; border: 1px solid #D1D5DB; border-radius: 8px;
+            font-size: 25px; font-weight: 700; color: black;
+            height: 75px; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+        }
+        .key:active { background: #F3F4F6; }
 
-        /* 글자 크기 30px */
-        h2 { 
-            font-size: 30px; 
-            color: #2c3e50; 
-            margin-bottom: 30px; 
-            margin-top: 0;
-            font-weight: 700; 
-            letter-spacing: -1px;
+        /* 결과 팝업 */
+        #resultModal {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center; z-index: 2000;
         }
+        .modal-content {
+            width: 85%; max-width: 300px; border-radius: 15px;
+            text-align: center; color: white; padding: 35px 15px;
+        }
+        .bg-blue { background-color: #6799FF; }   /* 1순번 */
+        .bg-green { background-color: #47C83E; }  /* 2순번 */
+        .bg-orange { background-color: #FFBB00; } /* 3순번 이상 */
+        .bg-red { background-color: #FF3636; }    /* 미등록 */
 
-        input[type="password"] {
-            width: 100%; padding: 16px; margin-bottom: 15px;
-            border: 1px solid #eee; border-radius: 12px;
-            box-sizing: border-box; font-size: 16px;
-            text-align: center; background-color: #f9f9f9; outline: none;
-        }
-        .login-btn {
-            width: 100%; padding: 16px;
-            background-color: #1e2a5a; color: white;
-            border: none; border-radius: 12px;
-            font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 35px;
-        }
-        .brand-logo { width: 150px; height: auto; display: block; margin: 0 auto 10px auto; }
-        .office-text { font-size: 0.95rem; color: #555; font-weight: 500; }
+        .modal-allnum { font-size: 36px; margin: 0; opacity: 0.9; font-weight: 400; }
+        .modal-status { font-size: 38px; margin: 10px 0; font-weight: 800; }
+        .modal-desc { font-size: 28px; opacity: 0.9; margin: 0; }
+        .modal-penalty { font-size: 24px; font-weight: 800; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 15px; }
 
-        /* 커스텀 팝업 스타일 */
-        #customAlert {
-            display: none; position: fixed; top: 0; left: 0; 
-            width: 100%; height: 100%; background: rgba(0,0,0,0.4);
-            justify-content: center; align-items: center; z-index: 1000;
-        }
-        .alert-content {
-            width: 75%; max-width: 260px;
-            padding: 30px 20px; border-radius: 20px; text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            animation: fadeIn 0.3s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .alert-msg { font-size: 1.1rem; color: white; font-weight: 700; line-height: 1.5; }
+        .logo-bottom { margin-top: 15px; width: 50px; }
     </style>
 </head>
 <body>
 
-    <div class="login-box">
-        <img src="Security.png" alt="Security" class="lock-img">
+    <div class="main-title">오창반도유보라<br>주차관리</div>
 
-        <h2>관리자 로그인</h2>
-        
-        <input type="password" 
-               inputmode="numeric" 
-               pattern="[0-9]*" 
-               placeholder="비밀번호를 입력하세요" 
-               id="pwField"
-               maxlength="4"
-               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
-        
-        <button class="login-btn" onclick="validate()">확인</button>
-        
-        <img src="login.png" alt="로고" class="brand-logo">
-        <div class="office-text">오창반도유보라 관리사무소</div>
+    <div class="number-display" id="display">----</div>
+
+    <div class="keypad">
+        <div class="key" onclick="addNum('1')">1</div>
+        <div class="key" onclick="addNum('2')">2</div>
+        <div class="key" onclick="addNum('3')">3</div>
+        <div class="key" onclick="addNum('4')">4</div>
+        <div class="key" onclick="addNum('5')">5</div>
+        <div class="key" onclick="addNum('6')">6</div>
+        <div class="key" onclick="addNum('7')">7</div>
+        <div class="key" onclick="addNum('8')">8</div>
+        <div class="key" onclick="addNum('9')">9</div>
+        <div class="key" onclick="resetNum()">C</div>
+        <div class="key" onclick="addNum('0')">0</div>
+        <div class="key" onclick="backspace()">🔙</div>
     </div>
 
-    <div id="customAlert">
-        <div id="alertBox" class="alert-content">
-            <div id="alertMsg" class="alert-msg"></div>
+    <img src="UBORA.png" class="logo-bottom">
+
+    <div id="resultModal" onclick="this.style.display='none'">
+        <div id="modalCard" class="modal-content">
+            <p id="resAllNum" class="modal-allnum"></p>
+            <div id="resStatus" class="modal-status"></div>
+            <p id="resDesc" class="modal-desc"></p>
+            <div id="resPenalty" class="modal-penalty"></div>
         </div>
     </div>
 
     <script>
-        function showAutoAlert(msg, status) {
-            const alertContainer = document.getElementById('customAlert');
-            const alertBox = document.getElementById('alertBox');
-            const alertMsg = document.getElementById('alertMsg');
-            const pwInput = document.getElementById('pwField');
+        let carData = [];
+        let currentInput = "";
 
-            alertMsg.innerText = msg;
-            
-            if(status === 'success') {
-                alertBox.style.backgroundColor = '#47C83E';
-            } else {
-                alertBox.style.backgroundColor = '#FFBB00';
+        // 1. JSON 데이터 로드 (Streamlit의 load_data 역할)
+        fetch('carDB.json')
+            .then(response => response.json())
+            .then(data => {
+                carData = data;
+                console.log("데이터 로드 완료");
+            })
+            .catch(err => console.error("데이터 로드 실패:", err));
+
+        function addNum(n) {
+            if(currentInput.length < 4) {
+                currentInput += n;
+                updateDisplay();
+                if(currentInput.length === 4) {
+                    searchCar(currentInput);
+                }
             }
+        }
 
-            alertContainer.style.display = 'flex';
-            pwInput.value = "";
+        function resetNum() { currentInput = ""; updateDisplay(); }
+        function backspace() { currentInput = currentInput.slice(0, -1); updateDisplay(); }
+        function updateDisplay() {
+            document.getElementById('display').innerText = currentInput.padEnd(4, '-');
+        }
+
+        function searchCar(num) {
+            // carDB.json의 구조가 { "차량번호for": "1234", ... } 형태여야 합니다.
+            const results = carData.filter(car => String(car.차량번호for).trim() === num);
+            const modal = document.getElementById('resultModal');
+            const card = document.getElementById('modalCard');
+            
+            modal.style.display = 'flex';
+
+            if(results.length > 0) {
+                // 중복 차량이 있을 경우 첫 번째 차량 기준 (Streamlit 로직 확장 가능)
+                const res = results[0]; 
+                const seq = String(res.등록순서).trim();
+                const penalty = res.위반횟수 || 0; // JSON에 위반횟수가 포함되어 있다고 가정
+
+                document.getElementById('resAllNum').innerText = res.차량번호All;
+                document.getElementById('resStatus').innerText = "입주민 확인";
+                document.getElementById('resDesc').innerText = `🏠 [${seq}]순번 등록차량`;
+                document.getElementById('resPenalty').innerText = `주차규정위반 횟수 : ${penalty}회`;
+                
+                // 순번별 색상 적용
+                if(seq === "1") card.className = 'modal-content bg-blue';
+                else if(seq === "2") card.className = 'modal-content bg-green';
+                else card.className = 'modal-content bg-orange';
+
+            } else {
+                document.getElementById('resAllNum').innerText = "미등록 차량";
+                document.getElementById('resStatus').innerText = "미등록 차량";
+                document.getElementById('resDesc').innerText = "방문 정보 확인 필요";
+                document.getElementById('resPenalty').innerText = "";
+                card.className = 'modal-content bg-red';
+            }
 
             setTimeout(() => {
-                alertContainer.style.display = 'none';
-            }, 2000);
-        }
-
-        function validate() {
-            const pw = document.getElementById('pwField').value;
-            
-            if(pw === "1257") {
-                showAutoAlert("반갑습니다. 관리자님!", "success");
-            } else {
-                showAutoAlert("비밀번호를 다시 확인해주세요!", "fail");
-            }
+                modal.style.display = 'none';
+                resetNum();
+            }, 1800);
         }
     </script>
-
 </body>
 </html>
