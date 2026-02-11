@@ -17,6 +17,8 @@
             width: 100%; padding: 16px; background-color: #1e2a5a; color: white;
             border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
         }
+
+        /* 결과 팝업 */
         #customAlert {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000;
@@ -25,8 +27,12 @@
             width: 85%; max-width: 280px; padding: 40px 20px; border-radius: 25px; 
             text-align: center; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-        .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 12px; display: block; }
-        .res-msg { font-size: 22px; font-weight: 500; display: block; }
+        /* [최상단] 전체 차량번호 */
+        .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
+        /* [중간] 입주민 차량 안내 */
+        .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
+        /* [하단] 순번 정보 추가 */
+        .res-order { font-size: 18px; font-weight: 400; display: block; opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -42,59 +48,45 @@
         <div id="alertBox" class="alert-content">
             <div id="resFullNum" class="res-full-num"></div>
             <div id="resMsg" class="res-msg"></div>
-        </div>
+            <div id="resOrder" class="res-order"></div> </div>
     </div>
 
     <script>
         let carData = [];
 
-        // 데이터 로드 (파일 이름이 carDB.json 인지 꼭 확인하세요!)
+        // 데이터 로드
         fetch('carDB.json')
-            .then(res => {
-                if(!res.ok) throw new Error('파일을 찾을 수 없습니다.');
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
                 carData = data;
-                console.log("데이터 로드 완료:", carData.length, "건");
+                console.log("데이터 로드 완료");
             })
-            .catch(err => {
-                console.error(err);
-                alert("데이터 파일(carDB.json)을 불러오지 못했습니다.");
-            });
+            .catch(err => console.error("데이터 로드 실패"));
 
         function runSearch() {
             const inputVal = document.getElementById('carNumberInput').value;
-            
-            if(inputVal.length < 4) {
-                alert("차량번호 4자리를 입력해주세요.");
-                return;
-            }
+            if(inputVal.length < 4) return;
 
-            if(carData.length === 0) {
-                alert("데이터가 아직 로드되지 않았습니다. 잠시 후 다시 시도하세요.");
-                return;
-            }
-
-            // [수정] 실제 파일 필드명인 car_number_for를 사용합니다.
+            // 검색
             const foundCar = carData.find(car => String(car.car_number_for).trim() === inputVal);
 
             if(foundCar) {
-                // [수정] 실제 파일 필드명인 car_number_all을 사용합니다.
-                showResult(foundCar.car_number_all, "입주민 차량입니다.", "#1DDB16");
+                // 순번 텍스트 생성: [1]순번 차량입니다.
+                const orderText = `[${foundCar.registration_order}]순번 차량입니다.`;
+                showResult(foundCar.car_number_all, "입주민 차량입니다.", orderText, "#1DDB16");
             } else {
-                showResult("미등록", "등록되지 않은 차량입니다.", "#FF3636");
+                showResult("미등록", "등록되지 않은 차량입니다.", "", "#FF3636");
             }
         }
 
-        function showResult(fullNum, msg, bgColor) {
+        function showResult(fullNum, msg, order, bgColor) {
             document.getElementById('resFullNum').innerText = fullNum;
             document.getElementById('resMsg').innerText = msg;
+            document.getElementById('resOrder').innerText = order; // 순번 표시
             document.getElementById('alertBox').style.backgroundColor = bgColor;
             document.getElementById('customAlert').style.display = 'flex';
             
-            // 3.5초 후 자동으로 닫기
-            setTimeout(closeAlert, 3500);
+            setTimeout(closeAlert, 4000); // 정보가 많아졌으므로 4초 유지
         }
 
         function closeAlert() {
