@@ -51,7 +51,6 @@
         .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
         .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
         .res-order { font-size: 25px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
-        /* 아래 font-size를 18px에서 25px로 변경했습니다. */
         .res-error { font-size: 25px; font-weight: 600; display: block; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.5); }
 
         .oitok-run-btn {
@@ -187,7 +186,14 @@
             if (error) {
                 errorEl.innerText = error;
                 errorEl.style.display = "block";
-                errorEl.style.color = error.includes("[0]회") ? "rgba(255,255,255,0.8)" : "white";
+                
+                // 수정 부분: 0회일 땐 흰색, 1회 이상일 땐 빨간색 표시 및 투명도 1로 고정
+                if (error.includes("[0]회")) {
+                    errorEl.style.color = "white";
+                } else {
+                    errorEl.style.color = "#FF3636";
+                }
+                errorEl.style.opacity = "1"; 
             } else {
                 errorEl.style.display = "none";
             }
