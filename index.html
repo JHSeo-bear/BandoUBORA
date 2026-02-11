@@ -89,47 +89,40 @@
     </div>
 
     <script>
-        function showAutoAlert(msg, status) {
+        function showAutoAlert(msg) {
             const alertContainer = document.getElementById('customAlert');
             const alertBox = document.getElementById('alertBox');
             const alertMsg = document.getElementById('alertMsg');
             const pwInput = document.getElementById('pwField');
 
             alertMsg.innerText = msg;
-            
-            if(status === 'success') {
-                alertBox.style.backgroundColor = '#47C83E';
-            } else {
-                alertBox.style.backgroundColor = '#FFBB00';
-            }
+            alertBox.style.backgroundColor = '#FFBB00'; // 실패(노란색) 고정
 
             alertContainer.style.display = 'flex';
-            // 성공했을 때는 입력값을 바로 지우지 않고 유지한 상태로 페이지를 이동시키거나, 
-            // 흐름에 맞춰 지워줍니다. 여기서는 초기화합니다.
-            if(status !== 'success') pwInput.value = "";
+            pwInput.value = "";
 
-            // 알림창 자동 닫기 (실패 시 2초 유지)
-            if(status !== 'success') {
-                setTimeout(() => {
-                    alertContainer.style.display = 'none';
-                }, 2000);
-            }
+            setTimeout(() => {
+                alertContainer.style.display = 'none';
+            }, 2000);
         }
 
         function validate() {
             const pw = document.getElementById('pwField').value;
             
             if(pw === "1257") {
-                showAutoAlert("반갑습니다. 관리자님!", "success");
-                
-                // --- 핵심 수정 사항: 성공 시 main.html로 이동 ---
-                setTimeout(() => {
-                    window.location.href = "main.html";
-                }, 1200); // 1.2초 후 이동
+                // 성공 시: 팝업 없이 즉시 이동
+                // .replace를 사용하면 뒤로가기 시 팝업 잔상이 남지 않습니다.
+                window.location.replace("main.html");
             } else {
-                showAutoAlert("비밀번호를 다시 확인해주세요!", "fail");
+                // 실패 시: 팝업 표시
+                showAutoAlert("비밀번호를 다시 확인해주세요!");
             }
         }
+
+        // 엔터키 지원 (편의성)
+        document.getElementById('pwField').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') validate();
+        });
     </script>
 
 </body>
