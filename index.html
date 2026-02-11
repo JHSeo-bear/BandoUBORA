@@ -51,8 +51,8 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* 팝업 글자색은 흰색이 더 잘 어울릴 수 있어 조정했습니다 */
-        .alert-msg { font-size: 1.1rem; color: white; font-weight: 700; line-height: 1.5; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        /* 글자색을 흰색으로 하여 가독성을 높였습니다 */
+        .alert-msg { font-size: 1.1rem; color: white; font-weight: 700; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -78,21 +78,21 @@
             const alertMsg = document.getElementById('alertMsg');
             const pwInput = document.getElementById('pwField');
 
-            // 1. 메시지 설정
+            // 1. 메시지 입력
             alertMsg.innerText = msg;
             
-            // 2. 배경색 직접 지정 (status에 따라 강제 변경)
+            // 2. 배경색을 자바스크립트로 강제 지정 (CSS보다 우선순위 높음)
             if(status === 'success') {
                 alertBox.style.backgroundColor = '#47C83E';
             } else {
                 alertBox.style.backgroundColor = '#FFBB00';
             }
 
-            // 3. 표시 및 입력창 초기화
+            // 3. 팝업 표시 및 입력창 초기화
             alertContainer.style.display = 'flex';
             pwInput.value = "";
 
-            // 4. 2초 후 자동으로 닫기
+            // 4. 2초 후 자동 닫기
             setTimeout(() => {
                 alertContainer.style.display = 'none';
             }, 2000);
