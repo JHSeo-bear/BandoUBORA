@@ -55,7 +55,7 @@
     </div>
 
     <div id="customAlert" onclick="closeAlert()">
-        <div id="alertBox" class="alert-content">
+        <div id="alertBox" class="alert-content" onclick="event.stopPropagation()">
             <div id="resFullNum" class="res-full-num"></div>
             <div id="resMsg" class="res-msg"></div>
             <div id="resOrder" class="res-order"></div>
@@ -89,14 +89,15 @@
             const oitokBtn = document.getElementById('oitokBtn');
 
             if (matches.length > 1) {
-                // 중복은 생략(기존 로직 유지 가능)
+                // 중복 차량 처리 로직 (필요시 추가)
+                showResult("중복 차량 존재", "정확한 확인이 필요합니다.", "", "#808080", 4000);
             } else if (matches.length === 1) {
                 oitokBtn.style.display = 'none'; // 등록차량이면 버튼 숨김
                 processSelection(matches[0]);
             } else {
                 // 미등록 차량일 때 오이천사 버튼 표시
                 oitokBtn.style.display = 'block';
-                showResult("미등록 차량", "방문차량 등록 정보를<br>오이천사에서 확인하세요.", "", "#FF3636", 6000);
+                showResult("미등록 차량", "방문차량 등록 정보를<br>오이천사에서 확인하세요.", "", "#FF3636", 8000);
             }
         }
 
@@ -104,20 +105,21 @@
         function launchOitok(event) {
             event.stopPropagation(); // 팝업 닫힘 방지
             
-            // 안드로이드 인텐트 스킴 (앱 패키지명 기반 실행)
-            // 오이천사 재난알림 관리시스템 패키지명 기반
-            const packageName = "com.oitok.manager"; // 일반적인 관리자용 패키지명 예시
+            // 정확한 패키지명 적용
+            const packageName = "net.gntalk.parkingmanager"; 
             const intentUri = `intent://#Intent;scheme=oitok;package=${packageName};end`;
 
-            // 실행 시도
+            // 앱 실행 시도
             location.href = intentUri;
 
-            // 앱이 없을 경우를 대비해 플레이스토어로 연결 (1.5초 후)
+            // 앱이 없을 경우 플레이스토어로 연결 안내
             setTimeout(() => {
-                if (confirm("오이천사 앱이 열리지 않았나요?\n플레이스토어로 이동하시겠습니까?")) {
-                    location.href = "https://play.google.com/store/apps/details?id=" + packageName;
+                if (document.visibilityState === 'visible') {
+                    if (confirm("오이천사 앱이 열리지 않았나요?\n플레이스토어로 이동하시겠습니까?")) {
+                        location.href = "https://play.google.com/store/apps/details?id=" + packageName;
+                    }
                 }
-            }, 1500);
+            }, 2000);
         }
 
         function processSelection(car) {
@@ -131,7 +133,7 @@
             else if (order === 3) bgColor = "#FFBB00"; 
             else if (order === 4) bgColor = "#FF00DD"; 
 
-            showResult(fullNum, "입주민 차량입니다.", `[${order}] 순번 등록`, bgColor, 3000, errorMsg);
+            showResult(fullNum, "입주민 차량입니다.", `[${order}] 순번 등록`, bgColor, 4000, errorMsg);
         }
 
         function showResult(fullNum, msg, order, bgColor, duration, errorMsg = "") {
