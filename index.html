@@ -37,12 +37,18 @@
             font-size: 1rem; font-weight: 600;
             cursor: pointer; margin-bottom: 35px;
         }
-        /* 이미지 안 보임 방지 설정 */
         .brand-logo {
-            width: 160px; 
+            width: 150px; 
             height: auto;
             display: block;
-            margin: 0 auto; /* 중앙 정렬 */
+            margin: 0 auto 10px auto; /* 로고 아래 10px 여백 */
+        }
+        /* 추가된 텍스트 스타일 */
+        .office-text {
+            font-size: 0.95rem;
+            color: #555;
+            font-weight: 500;
+            letter-spacing: -0.5px;
         }
     </style>
 </head>
@@ -53,7 +59,9 @@
         <input type="password" inputmode="numeric" pattern="[0-9]*" placeholder="비밀번호를 입력하세요" id="pwField">
         <button class="login-btn" onclick="validate()">확인</button>
         
-        <img src="login.png" alt="로고 준비 중" class="brand-logo">
+        <img src="login.png" alt="로고" class="brand-logo">
+        
+        <div class="office-text">오창반도유보라 관리사무소</div>
     </div>
 
     <script>
