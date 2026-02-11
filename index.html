@@ -42,9 +42,10 @@
             justify-content: center; align-items: center; z-index: 1000;
         }
         .alert-content {
-            width: 75%; max-width: 260px;
+            background: white; width: 70%; max-width: 250px;
             padding: 30px 20px; border-radius: 20px; text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            /* 애니메이션 효과 */
             animation: fadeIn 0.3s;
         }
         @keyframes fadeIn {
@@ -52,10 +53,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .alert-msg { font-size: 1.05rem; color: #333; font-weight: 600; line-height: 1.5; }
-        
-        /* 성공/실패 배경색 클래스 */
-        .bg-success { background-color: #e8f5e9 !important; border: 1px solid #c8e6c9; } /* 연한 초록 */
-        .bg-fail { background-color: #fff3e0 !important; border: 1px solid #ffe0b2; }    /* 연한 주황 */
     </style>
 </head>
 <body>
@@ -69,35 +66,27 @@
     </div>
 
     <div id="customAlert">
-        <div id="alertBox" class="alert-content">
+        <div class="alert-content">
             <div id="alertMsg" class="alert-msg"></div>
         </div>
     </div>
 
     <script>
-        function showAutoAlert(msg, status) {
-            const alertContainer = document.getElementById('customAlert');
-            const alertBox = document.getElementById('alertBox');
+        function showAutoAlert(msg) {
+            const alertBox = document.getElementById('customAlert');
             const alertMsg = document.getElementById('alertMsg');
             const pwInput = document.getElementById('pwField');
 
-            // 1. 메시지 및 배경색 설정
+            // 1. 팝업 메시지 설정 및 표시
             alertMsg.innerText = msg;
-            alertBox.className = 'alert-content'; // 초기화
-            
-            if(status === 'success') {
-                alertBox.classList.add('bg-success');
-            } else {
-                alertBox.classList.add('bg-fail');
-            }
+            alertBox.style.display = 'flex';
 
-            // 2. 표시 및 입력창 초기화
-            alertContainer.style.display = 'flex';
+            // 2. 입력창 즉시 초기화
             pwInput.value = "";
 
-            // 3. 2초 후 자동으로 닫기
+            // 3. 2초 후 자동으로 닫기 (2000ms)
             setTimeout(() => {
-                alertContainer.style.display = 'none';
+                alertBox.style.display = 'none';
             }, 2000);
         }
 
@@ -105,10 +94,11 @@
             const pw = document.getElementById('pwField').value;
             
             if(pw === "1257") {
-                showAutoAlert("반갑습니다. 관리자님!", "success");
-                // 2초 뒤 다음 페이지 이동 로직이 필요하면 여기에 추가
+                showAutoAlert("반갑습니다. 관리자님!");
+                // (선택사항) 2초 후 페이지 이동을 원하시면 아래 주석을 해제하세요.
+                // setTimeout(() => { window.location.href = "main.html"; }, 2000);
             } else {
-                showAutoAlert("비밀번호를 다시 확인해주세요!", "fail");
+                showAutoAlert("비밀번호를 다시 확인해주세요!");
             }
         }
     </script>
