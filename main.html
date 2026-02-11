@@ -27,7 +27,6 @@
             border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
         }
 
-        /* 중복 차량 선택 목록 스타일 */
         #selectionBox {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(255,255,255,0.95); z-index: 1100; flex-direction: column; align-items: center; justify-content: center;
@@ -40,7 +39,6 @@
             text-align: center; cursor: pointer; color: #1e2a5a;
         }
 
-        /* 결과 팝업 */
         #customAlert {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000;
@@ -54,13 +52,28 @@
         .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
         .res-order { font-size: 25px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
         .res-error { font-size: 18px; font-weight: 600; display: block; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.5); }
+
+        .oitok-run-btn {
+            display: none; margin-top: 25px; padding: 15px; 
+            background-color: #ffffff; color: #FF3636; 
+            border-radius: 12px; font-weight: 800; font-size: 16px;
+            cursor: pointer; border: none; width: 100%;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="instruction-text">차량번호를 입력해주세요</div>
-        <input type="text" inputmode="numeric" placeholder="번호 4자리" id="carNumberInput" maxlength="4"
+        <input type="text" 
+               inputmode="numeric" 
+               placeholder="번호 4자리" 
+               id="carNumberInput" 
+               maxlength="4" 
+               autocomplete="one-time-code" 
+               spellcheck="false"
+               autocorrect="off"
+               autocapitalize="off"
                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
         <button class="search-btn" onclick="runSearch()">조회하기</button>
     </div>
@@ -71,11 +84,12 @@
     </div>
 
     <div id="customAlert" onclick="closeAlert()">
-        <div id="alertBox" class="alert-content">
+        <div id="alertBox" class="alert-content" onclick="event.stopPropagation()">
             <div id="resFullNum" class="res-full-num"></div>
             <div id="resMsg" class="res-msg"></div>
             <div id="resOrder" class="res-order"></div>
             <div id="resError" class="res-error"></div>
+            <button id="oitokBtn" class="oitok-run-btn" onclick="launchOitok()">오이천사 앱 바로 실행</button>
         </div>
     </div>
 
@@ -86,9 +100,10 @@
 
         async function loadData() {
             try {
+                const now = Date.now();
                 const [carRes, errRes] = await Promise.all([
-                    fetch('carDB.json'),
-                    fetch('err.json')
+                    fetch(`carDB.json?v=${now}`),
+                    fetch(`err.json?v=${now}`)
                 ]);
                 carData = await carRes.json();
                 errorData = await errRes.json();
@@ -101,17 +116,35 @@
 
         function runSearch() {
             const inputVal = document.getElementById('carNumberInput').value;
+            const oitokBtn = document.getElementById('oitokBtn');
             if(inputVal.length < 4) return;
 
             const matches = carData.filter(car => String(car.car_number_for).trim() === inputVal);
 
             if (matches.length > 1) {
+                oitokBtn.style.display = 'none';
                 showSelectionList(matches);
             } else if (matches.length === 1) {
+                oitokBtn.style.display = 'none';
                 processSelection(matches[0]);
             } else {
-                showResult("미등록차량 입니다.", "방문차량정보를 확인해주세요.", "", "", "#FF3636", 3000);
+                oitokBtn.style.display = 'block';
+                showResult("미등록차량 입니다.", "방문차량정보를 확인해주세요.", "", "", "#FF3636", 8000);
             }
+        }
+
+        function launchOitok() {
+            const packageName = "net.gntalk.parkingmanager"; 
+            const intentUri = `intent://#Intent;scheme=oitok;package=${packageName};end`;
+            location.href = intentUri;
+            
+            setTimeout(() => {
+                if (document.visibilityState === 'visible') {
+                    if (confirm("앱이 열리지 않았나요?\n플레이스토어로 이동하시겠습니까?")) {
+                        location.href = "https://play.google.com/store/apps/details?id=" + packageName;
+                    }
+                }
+            }, 2000);
         }
 
         function showSelectionList(cars) {
@@ -135,18 +168,18 @@
             const fullNum = car.car_number_all.trim();
             const orderText = `[${order}] 순번 등록차량입니다.`;
             
-            const violationCount = errorData
-                .filter(err => String(err.차량번호).trim() === fullNum)
-                .reduce((sum, curr) => sum + (Number(curr.위반횟수) || 0), 0);
+            const violationCount = errorData.filter(err => 
+                String(err.차량번호).trim() === fullNum
+            ).length;
             
-            const errorText = `주차규정 위반횟수 [${violationCount}]회`;
+            const errorText = violationCount > 0 ? `주차규정 위반횟수 [${violationCount}]회` : "";
 
             let bgColor = "#1DDB16"; 
             if (order === 1) bgColor = "#368AFF";      
             else if (order === 3) bgColor = "#FFBB00"; 
             else if (order === 4) bgColor = "#FF00DD"; 
 
-            showResult(fullNum, "입주민 차량입니다.", orderText, errorText, bgColor, 2000);
+            showResult(fullNum, "입주민 차량입니다.", orderText, errorText, bgColor, 4000);
         }
 
         function showResult(fullNum, msg, order, error, bgColor, duration) {
