@@ -2,18 +2,56 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>반도유보라 프로젝트</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오창반도유보라 프로젝트</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
-        .container { text-align: center; background: white; padding: 2rem; border-radius: 10px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #1a73e8; }
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            background-color: #f0f2f5; 
+            padding: 20px; /* 모바일 여백 */
+        }
+        .container { 
+            width: 100%;
+            max-width: 400px; /* 모바일에서 보기 적당한 너비 */
+            text-align: center; 
+            background: white; 
+            padding: 2.5rem 1.5rem; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+        }
+        h1 { 
+            color: #1a73e8; 
+            font-size: 1.5rem; /* 모바일에서 적당한 제목 크기 */
+            margin-bottom: 1rem;
+            word-break: keep-all; /* 단어 단위로 줄바꿈 */
+        }
+        p { 
+            color: #5f6368;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #1a73e8;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>오창반도유보라 프로젝트 시작</h1>
-        <p>시작</p>
+        <h1>🏢 오창반도유보라<br>프로젝트 시작</h1>
+        <p>모바일 최적화 배포 완료!</p>
+        <a href="#" class="btn">자세히 보기</a>
     </div>
 </body>
-
 </html>
