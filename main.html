@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>주차관리</title>
-    <link rel="apple-touch-icon" href="apticon.png">
-    <link rel="icon" type="image/png" href="apticon.png">
-    <meta name="apple-mobile-web-app-title" content="주차관리">
-    
+    <title>주차관리 - 조회</title>
     <style>
         body { 
             font-family: -apple-system, sans-serif; 
@@ -19,24 +15,13 @@
             background: white; border-radius: 25px; 
             box-shadow: 0 15px 35px rgba(0,0,0,0.08); text-align: center;
         }
-        
-        .lock-img {
-            width: 70px;
-            height: auto;
-            margin-bottom: 15px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
+        .lock-img { width: 70px; height: auto; margin-bottom: 15px; display: block; margin: 0 auto 15px auto; }
 
-        /* "차량번호 조회" 텍스트 스타일: 30px로 설정 */
+        /* 30px로 확대한 차량번호 조회 타이틀 */
         h2 { 
-            font-size: 30px; 
-            color: #2c3e50; 
-            margin-bottom: 30px; 
-            margin-top: 0;
-            font-weight: 700; 
-            letter-spacing: -1px;
+            font-size: 30px; color: #2c3e50; margin-bottom: 30px; 
+            margin-top: 0; font-weight: 700; letter-spacing: -1px;
+            display: block; /* 확실히 보이게 처리 */
         }
 
         input[type="password"] {
@@ -53,23 +38,6 @@
         }
         .brand-logo { width: 150px; height: auto; display: block; margin: 0 auto 10px auto; }
         .office-text { font-size: 0.95rem; color: #555; font-weight: 500; }
-
-        #customAlert {
-            display: none; position: fixed; top: 0; left: 0; 
-            width: 100%; height: 100%; background: rgba(0,0,0,0.4);
-            justify-content: center; align-items: center; z-index: 1000;
-        }
-        .alert-content {
-            width: 75%; max-width: 260px;
-            padding: 30px 20px; border-radius: 20px; text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            animation: fadeIn 0.3s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .alert-msg { font-size: 1.1rem; color: white; font-weight: 700; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -82,50 +50,20 @@
         <input type="password" 
                inputmode="numeric" 
                pattern="[0-9]*" 
-               placeholder="비밀번호를 입력하세요" 
+               placeholder="번호 4자리를 입력하세요" 
                id="pwField"
                maxlength="4"
                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
         
-        <button class="login-btn" onclick="validate()">확인</button>
+        <button class="login-btn" onclick="validate()">조회</button>
         
         <img src="login.png" alt="로고" class="brand-logo">
         <div class="office-text">오창반도유보라 관리사무소</div>
     </div>
 
-    <div id="customAlert">
-        <div id="alertBox" class="alert-content">
-            <div id="alertMsg" class="alert-msg"></div>
-        </div>
-    </div>
-
     <script>
-        function showAutoAlert(msg, status) {
-            const alertContainer = document.getElementById('customAlert');
-            const alertBox = document.getElementById('alertBox');
-            const alertMsg = document.getElementById('alertMsg');
-            const pwInput = document.getElementById('pwField');
-
-            alertMsg.innerText = msg;
-            
-            if(status === 'success') {
-                alertBox.style.backgroundColor = '#47C83E';
-            } else {
-                alertBox.style.backgroundColor = '#FFBB00';
-            }
-
-            alertContainer.style.display = 'flex';
-            pwInput.value = "";
-
-            setTimeout(() => {
-                alertContainer.style.display = 'none';
-            }, 2000);
-        }
-
         function validate() {
-            // 이후 여기에 기능을 추가할 예정
-            const val = document.getElementById('pwField').value;
-            console.log("입력값:", val);
+            alert("조회 기능을 준비 중입니다.");
         }
     </script>
 
