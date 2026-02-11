@@ -54,6 +54,7 @@
 
     <script>
         let carData = [];
+        let alertTimer = null; // 타이머 중복 방지 변수
 
         fetch('carDB.json')
             .then(res => res.json())
@@ -76,22 +77,30 @@
                 else if (order === 3) bgColor = "#FFBB00"; // 3순번: 노랑
                 else if (order === 4) bgColor = "#FF00DD"; // 4순번: 핑크
 
-                showResult(foundCar.car_number_all, "입주민 차량입니다.", orderText, bgColor);
+                // 입주민 차량은 2초 (2000ms)
+                showResult(foundCar.car_number_all, "입주민 차량입니다.", orderText, bgColor, 2000);
             } else {
-                showResult("미등록", "등록되지 않은 차량입니다.", "", "#FF3636");
+                // 미등록 차량은 3초 (3000ms)
+                showResult("미등록 차량입니다.", "방문차량정보를 확인해주세요.", "", "#FF3636", 3000);
             }
         }
 
-        function showResult(fullNum, msg, order, bgColor) {
+        function showResult(fullNum, msg, order, bgColor, duration) {
+            // 새 조회를 할 때 기존에 작동하던 타이머가 있다면 취소 (팝업 꼬임 방지)
+            if(alertTimer) clearTimeout(alertTimer);
+
             document.getElementById('resFullNum').innerText = fullNum;
             document.getElementById('resMsg').innerText = msg;
             document.getElementById('resOrder').innerText = order;
             document.getElementById('alertBox').style.backgroundColor = bgColor;
             document.getElementById('customAlert').style.display = 'flex';
-            setTimeout(closeAlert, 4000);
+            
+            // 설정된 시간(duration) 후 팝업 닫기
+            alertTimer = setTimeout(closeAlert, duration);
         }
 
         function closeAlert() {
+            if(alertTimer) clearTimeout(alertTimer);
             document.getElementById('customAlert').style.display = 'none';
             document.getElementById('carNumberInput').value = ""; 
         }
