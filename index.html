@@ -3,32 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <title>주차관리</title>
     <link rel="apple-touch-icon" href="apticon.png">
     <link rel="icon" type="image/png" href="apticon.png">
     <meta name="apple-mobile-web-app-title" content="주차관리">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+    
     <style>
         body { 
             font-family: -apple-system, sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-            background-color: #f4f7fa; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; margin: 0; background-color: #f4f7fa; 
         }
         .login-box { 
-            width: 85%;
-            max-width: 320px; 
-            padding: 40px 20px;
-            background: white; 
-            border-radius: 25px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
-            text-align: center;
+            width: 85%; max-width: 320px; padding: 40px 20px;
+            background: white; border-radius: 25px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08); text-align: center;
         }
         h2 { font-size: 1.3rem; color: #2c3e50; margin-bottom: 30px; font-weight: 700; }
         input[type="password"] {
@@ -41,20 +30,29 @@
             width: 100%; padding: 16px;
             background-color: #1e2a5a; color: white;
             border: none; border-radius: 12px;
-            font-size: 1rem; font-weight: 600;
-            cursor: pointer; margin-bottom: 35px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 35px;
         }
-        .brand-logo {
-            width: 150px; 
-            height: auto;
-            display: block;
-            margin: 0 auto 10px auto;
+        .brand-logo { width: 150px; height: auto; display: block; margin: 0 auto 10px auto; }
+        .office-text { font-size: 0.95rem; color: #555; font-weight: 500; }
+
+        /* 커스텀 팝업 스타일 */
+        #customAlert {
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; background: rgba(0,0,0,0.4);
+            justify-content: center; align-items: center; z-index: 1000;
         }
-        .office-text {
-            font-size: 0.95rem;
-            color: #555;
-            font-weight: 500;
+        .alert-content {
+            background: white; width: 70%; max-width: 250px;
+            padding: 30px 20px; border-radius: 20px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            /* 애니메이션 효과 */
+            animation: fadeIn 0.3s;
         }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .alert-msg { font-size: 1.05rem; color: #333; font-weight: 600; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -63,20 +61,44 @@
         <h2>관리자 로그인</h2>
         <input type="password" inputmode="numeric" pattern="[0-9]*" placeholder="비밀번호를 입력하세요" id="pwField">
         <button class="login-btn" onclick="validate()">확인</button>
-        
         <img src="login.png" alt="로고" class="brand-logo">
         <div class="office-text">오창반도유보라 관리사무소</div>
     </div>
 
+    <div id="customAlert">
+        <div class="alert-content">
+            <div id="alertMsg" class="alert-msg"></div>
+        </div>
+    </div>
+
     <script>
+        function showAutoAlert(msg) {
+            const alertBox = document.getElementById('customAlert');
+            const alertMsg = document.getElementById('alertMsg');
+            const pwInput = document.getElementById('pwField');
+
+            // 1. 팝업 메시지 설정 및 표시
+            alertMsg.innerText = msg;
+            alertBox.style.display = 'flex';
+
+            // 2. 입력창 즉시 초기화
+            pwInput.value = "";
+
+            // 3. 2초 후 자동으로 닫기 (2000ms)
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 2000);
+        }
+
         function validate() {
             const pw = document.getElementById('pwField').value;
+            
             if(pw === "1257") {
-                alert("반갑습니다, 관리자님!");
-                // 로그인 성공 후 메인 페이지로 이동 로직 예정
+                showAutoAlert("반갑습니다. 관리자님!");
+                // (선택사항) 2초 후 페이지 이동을 원하시면 아래 주석을 해제하세요.
+                // setTimeout(() => { window.location.href = "main.html"; }, 2000);
             } else {
-                alert("비밀번호가 올바르지 않습니다.");
-                document.getElementById('pwField').value = "";
+                showAutoAlert("비밀번호를 다시 확인해주세요!");
             }
         }
     </script>
