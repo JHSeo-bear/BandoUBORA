@@ -18,6 +18,19 @@
             border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
         }
 
+        /* 중복 차량 선택 목록 스타일 */
+        #selectionBox {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.95); z-index: 1100; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .select-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #1e2a5a; }
+        .car-list { width: 80%; max-width: 300px; list-style: none; padding: 0; margin: 0; }
+        .car-item { 
+            background: #fff; border: 2px solid #1e2a5a; border-radius: 15px; 
+            padding: 15px; margin-bottom: 10px; font-size: 18px; font-weight: 700; 
+            text-align: center; cursor: pointer; color: #1e2a5a;
+        }
+
         /* 결과 팝업 */
         #customAlert {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -30,19 +43,8 @@
         }
         .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
         .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
-        
-        /* [수정] 순번 등록차량 문구: 30px -> 25px로 조정 */
         .res-order { font-size: 25px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
-        
-        /* 분리선 및 위반횟수 스타일 */
-        .res-error { 
-            font-size: 18px; 
-            font-weight: 600; 
-            display: block; 
-            margin-top: 20px; 
-            padding-top: 15px; 
-            border-top: 1px solid rgba(255, 255, 255, 0.5); 
-        }
+        .res-error { font-size: 18px; font-weight: 600; display: block; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.5); }
     </style>
 </head>
 <body>
@@ -52,6 +54,11 @@
         <input type="text" inputmode="numeric" placeholder="번호 4자리" id="carNumberInput" maxlength="4"
                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
         <button class="search-btn" onclick="runSearch()">조회하기</button>
+    </div>
+
+    <div id="selectionBox">
+        <div class="select-title">해당하는 차량을 선택하세요</div>
+        <ul id="carList" class="car-list"></ul>
     </div>
 
     <div id="customAlert" onclick="closeAlert()">
@@ -68,7 +75,6 @@
         let errorData = []; 
         let alertTimer = null;
 
-        // 데이터 로드 보강
         async function loadData() {
             try {
                 const [carRes, errRes] = await Promise.all([
@@ -88,29 +94,56 @@
             const inputVal = document.getElementById('carNumberInput').value;
             if(inputVal.length < 4) return;
 
-            const foundCar = carData.find(car => String(car.car_number_for).trim() === inputVal);
+            // 1. 일치하는 모든 차량 필터링
+            const matches = carData.filter(car => String(car.car_number_for).trim() === inputVal);
 
-            if(foundCar) {
-                const order = foundCar.registration_order;
-                const fullNum = foundCar.car_number_all.trim();
-                const orderText = `[${order}] 순번 등록차량입니다.`;
-                
-                // 위반 횟수 합산 로직
-                const violationCount = errorData
-                    .filter(err => String(err.차량번호).trim() === fullNum)
-                    .reduce((sum, curr) => sum + (Number(curr.위반횟수) || 0), 0);
-                
-                const errorText = `주차규정 위반횟수 [${violationCount}]회`;
-
-                let bgColor = "#1DDB16"; 
-                if (order === 1) bgColor = "#368AFF";      
-                else if (order === 3) bgColor = "#FFBB00"; 
-                else if (order === 4) bgColor = "#FF00DD"; 
-
-                showResult(fullNum, "입주민 차량입니다.", orderText, errorText, bgColor, 2000);
+            if (matches.length > 1) {
+                // 중복 차량이 있을 경우 목록 표시
+                showSelectionList(matches);
+            } else if (matches.length === 1) {
+                // 한 대일 경우 바로 팝업
+                processSelection(matches[0]);
             } else {
+                // 미등록 차량
                 showResult("미등록차량 입니다.", "방문차량정보를 확인해주세요.", "", "", "#FF3636", 3000);
             }
+        }
+
+        // 중복 목록 생성 및 표시
+        function showSelectionList(cars) {
+            const listEl = document.getElementById('carList');
+            listEl.innerHTML = '';
+            cars.forEach(car => {
+                const li = document.createElement('li');
+                li.className = 'car-item';
+                li.innerText = car.car_number_all;
+                li.onclick = () => {
+                    document.getElementById('selectionBox').style.display = 'none';
+                    processSelection(car);
+                };
+                listEl.appendChild(li);
+            });
+            document.getElementById('selectionBox').style.display = 'flex';
+        }
+
+        // 선택된 차량 정보 처리
+        function processSelection(car) {
+            const order = car.registration_order;
+            const fullNum = car.car_number_all.trim();
+            const orderText = `[${order}] 순번 등록차량입니다.`;
+            
+            const violationCount = errorData
+                .filter(err => String(err.차량번호).trim() === fullNum)
+                .reduce((sum, curr) => sum + (Number(curr.위반횟수) || 0), 0);
+            
+            const errorText = `주차규정 위반횟수 [${violationCount}]회`;
+
+            let bgColor = "#1DDB16"; 
+            if (order === 1) bgColor = "#368AFF";      
+            else if (order === 3) bgColor = "#FFBB00"; 
+            else if (order === 4) bgColor = "#FF00DD"; 
+
+            showResult(fullNum, "입주민 차량입니다.", orderText, errorText, bgColor, 2000);
         }
 
         function showResult(fullNum, msg, order, error, bgColor, duration) {
@@ -122,11 +155,9 @@
             
             const errorEl = document.getElementById('resError');
             if (error && error.includes("[") && !error.includes("[0]회")) {
-                // 위반 횟수가 0회가 아닐 때만 표시하거나, 요청에 따라 항상 표시 가능
                 errorEl.innerText = error;
                 errorEl.style.display = "block";
             } else if (error && error.includes("[0]회")) {
-                // 0회일 때 문구는 넣되 표시하고 싶지 않다면 숨김 처리 (현재는 0회도 표시하게 둠)
                 errorEl.innerText = error;
                 errorEl.style.display = "block";
             } else {
@@ -147,4 +178,3 @@
     </script>
 </body>
 </html>
-
