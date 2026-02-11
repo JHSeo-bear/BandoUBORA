@@ -120,23 +120,20 @@
                 oitokBtn.style.display = 'none';
                 processSelection(matches[0]);
             } else {
+                // 미등록 차량일 때 버튼 활성화 및 결과 표시
                 oitokBtn.style.display = 'block';
                 showResult("미등록차량 입니다.", "방문차량정보를 확인해주세요.", "", "", "#FF3636", 8000);
             }
         }
 
+        // 앱 바로 실행 로직
         function launchOitok() {
             const packageName = "net.gntalk.parkingmanager"; 
-            const intentUri = `intent://#Intent;scheme=oitok;package=${packageName};end`;
-            location.href = intentUri;
+            // 안드로이드 앱의 메인 액티비티를 직접 호출하는 인텐트 스킴
+            const intentUri = `intent://scan#Intent;scheme=oitok;package=${packageName};end`;
             
-            setTimeout(() => {
-                if (document.visibilityState === 'visible') {
-                    if (confirm("앱이 열리지 않았나요?\n플레이스토어로 이동하시겠습니까?")) {
-                        location.href = "https://play.google.com/store/apps/details?id=" + packageName;
-                    }
-                }
-            }, 2000);
+            // 앱 실행 시도
+            location.href = intentUri;
         }
 
         function showSelectionList(cars) {
@@ -187,7 +184,6 @@
                 errorEl.innerText = error;
                 errorEl.style.display = "block";
                 
-                // 수정 부분: 0회일 땐 흰색, 1회 이상일 땐 빨간색 표시 및 투명도 1로 고정
                 if (error.includes("[0]회")) {
                     errorEl.style.color = "white";
                 } else {
