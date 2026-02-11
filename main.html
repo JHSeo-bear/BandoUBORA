@@ -45,7 +45,7 @@
             justify-content: center; align-items: center; z-index: 1000;
         }
         .alert-content {
-            width: 80%; max-width: 280px;
+            width: 85%; max-width: 280px;
             padding: 40px 20px; border-radius: 25px; text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             animation: fadeIn 0.3s; color: white;
@@ -54,8 +54,10 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .res-full-num { font-size: 24px; font-weight: 400; margin-bottom: 10px; }
-        .res-msg { font-size: 28px; font-weight: 800; }
+        /* 최상단 전체 번호 스타일 */
+        .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 12px; display: block; }
+        /* 아래 안내 문구 스타일 */
+        .res-msg { font-size: 22px; font-weight: 500; display: block; opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -101,13 +103,14 @@
                 return;
             }
 
-            // carDB.json에서 차량번호for(4자리)가 일치하는 데이터 찾기
+            // 검색: 차량번호for와 입력값 비교
             const foundCar = carData.find(car => String(car.차량번호for).trim() === inputVal);
 
             if(foundCar) {
+                // 전체 번호를 최상단에, 메시지를 아래에 표시
                 showResult(foundCar.차량번호All, "입주민 차량입니다.", "#1DDB16");
             } else {
-                showResult("조회 결과 없음", "미등록 차량입니다.", "#FF3636"); // 미등록 시 빨간색 팝업
+                showResult("정보 없음", "미등록 차량입니다.", "#FF3636");
             }
         }
 
@@ -121,13 +124,13 @@
 
             alertContainer.style.display = 'flex';
 
-            // 3초 후 자동 닫기
-            setTimeout(closeAlert, 3000);
+            // 3.5초 후 자동 닫기 (가독성을 위해 약간 늘림)
+            setTimeout(closeAlert, 3500);
         }
 
         function closeAlert() {
             document.getElementById('customAlert').style.display = 'none';
-            document.getElementById('carNumberInput').value = ""; // 입력창 초기화
+            document.getElementById('carNumberInput').value = ""; 
         }
     </script>
 
