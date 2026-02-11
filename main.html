@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>주차관리 - 차량조회</title>
+    <title>주차관리</title>
     <link rel="apple-touch-icon" href="apticon.png">
     <link rel="icon" type="image/png" href="apticon.png">
+    <meta name="apple-mobile-web-app-title" content="주차관리">
     
     <style>
-        /* 기존 로그인 페이지(index.html) 스타일과 100% 동일하게 유지 */
         body { 
             font-family: -apple-system, sans-serif; 
             display: flex; justify-content: center; align-items: center; 
@@ -20,26 +20,32 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.08); text-align: center;
         }
         
-        /* 최상단 타이틀 추가 */
-        .top-sub-title {
-            font-size: 14px; color: #1e2a5a; font-weight: 800;
-            margin-bottom: 10px; letter-spacing: 1px;
+        /* 자물쇠 이미지 스타일 */
+        .lock-img {
+            width: 70px;
+            height: auto;
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
 
+        /* 글자 크기 30px */
         h2 { 
-            font-size: 30px; color: #2c3e50; margin-bottom: 30px; 
-            margin-top: 0; font-weight: 700; letter-spacing: -1px;
+            font-size: 30px; 
+            color: #2c3e50; 
+            margin-bottom: 30px; 
+            margin-top: 0;
+            font-weight: 700; 
+            letter-spacing: -1px;
         }
 
-        /* 입력창 디자인 유지 */
-        input[type="text"] {
+        input[type="password"] {
             width: 100%; padding: 16px; margin-bottom: 15px;
             border: 1px solid #eee; border-radius: 12px;
-            box-sizing: border-box; font-size: 18px;
+            box-sizing: border-box; font-size: 16px;
             text-align: center; background-color: #f9f9f9; outline: none;
-            font-weight: 700; color: #34425A;
         }
-        
         .login-btn {
             width: 100%; padding: 16px;
             background-color: #1e2a5a; color: white;
@@ -49,116 +55,79 @@
         .brand-logo { width: 150px; height: auto; display: block; margin: 0 auto 10px auto; }
         .office-text { font-size: 0.95rem; color: #555; font-weight: 500; }
 
-        /* 결과 알림 팝업 디자인 (로그인 알림창과 동일한 스타일) */
+        /* 커스텀 팝업 스타일 */
         #customAlert {
             display: none; position: fixed; top: 0; left: 0; 
             width: 100%; height: 100%; background: rgba(0,0,0,0.4);
             justify-content: center; align-items: center; z-index: 1000;
         }
         .alert-content {
-            width: 80%; max-width: 280px;
-            padding: 35px 20px; border-radius: 25px; text-align: center;
+            width: 75%; max-width: 260px;
+            padding: 30px 20px; border-radius: 20px; text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            animation: fadeIn 0.3s; color: white;
+            animation: fadeIn 0.3s;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .res-allnum { font-size: 24px; margin-bottom: 5px; opacity: 0.9; }
-        .res-status { font-size: 30px; font-weight: 800; margin-bottom: 10px; }
-        .res-desc { font-size: 20px; margin-bottom: 15px; }
-        .res-penalty { font-size: 18px; font-weight: 700; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 15px; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .alert-msg { font-size: 1.1rem; color: white; font-weight: 700; line-height: 1.5; }
     </style>
 </head>
 <body>
 
     <div class="login-box">
-        <div class="top-sub-title">차량번호 조회</div>
-        <h2>오창반도유보라</h2>
+        <img src="Security.png" alt="Security" class="lock-img">
+
+        <h2>관리자 로그인</h2>
         
-        <input type="text" 
+        <input type="password" 
                inputmode="numeric" 
                pattern="[0-9]*" 
-               placeholder="차량번호 뒤 4자리" 
-               id="carField"
+               placeholder="비밀번호를 입력하세요" 
+               id="pwField"
                maxlength="4"
                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
         
-        <button class="login-btn" onclick="validateSearch()">조회하기</button>
+        <button class="login-btn" onclick="validate()">확인</button>
         
         <img src="login.png" alt="로고" class="brand-logo">
         <div class="office-text">오창반도유보라 관리사무소</div>
     </div>
 
-    <div id="customAlert" onclick="this.style.display='none'">
+    <div id="customAlert">
         <div id="alertBox" class="alert-content">
-            <div id="resAllNum" class="res-allnum"></div>
-            <div id="resStatus" class="res-status"></div>
-            <div id="resDesc" class="res-desc"></div>
-            <div id="resPenalty" class="res-penalty"></div>
+            <div id="alertMsg" class="alert-msg"></div>
         </div>
     </div>
 
     <script>
-        let carData = [];
-        let errorData = [];
-
-        // DB 파일 로드
-        Promise.all([
-            fetch('carDB.json').then(res => res.json()),
-            fetch('err.json').then(res => res.json())
-        ]).then(([cars, errors]) => {
-            carData = cars;
-            errorData = errors;
-        }).catch(err => console.error("데이터 로드 실패"));
-
-        function validateSearch() {
-            const inputNum = document.getElementById('carField').value;
+        function showAutoAlert(msg, status) {
             const alertContainer = document.getElementById('customAlert');
             const alertBox = document.getElementById('alertBox');
+            const alertMsg = document.getElementById('alertMsg');
+            const pwInput = document.getElementById('pwField');
+
+            alertMsg.innerText = msg;
             
-            if(inputNum.length < 4) {
-                alert("차량번호 4자리를 입력해주세요.");
-                return;
-            }
-
-            const results = carData.filter(car => String(car.차량번호for).trim() === inputNum);
-            
-            if(results.length > 0) {
-                const res = results[0];
-                const seq = String(res.등록순서).trim();
-                const fullNum = res.차량번호All;
-
-                // 위반 횟수 매칭
-                const errRec = errorData.find(e => e.차량번호 === fullNum);
-                const penalty = errRec ? errRec.위반횟수 : 0;
-
-                // 결과 표시
-                document.getElementById('resAllNum').innerText = fullNum;
-                document.getElementById('resStatus').innerText = "입주민 확인";
-                document.getElementById('resDesc').innerText = `🏠 [${seq}]순번 차량`;
-                document.getElementById('resPenalty').innerText = `주차위반 횟수: ${penalty}회`;
-
-                // 순번별 색상 (로그인 페이지 감성 유지)
-                if(seq === "1") alertBox.style.backgroundColor = '#6799FF'; // 파랑
-                else if(seq === "2") alertBox.style.backgroundColor = '#47C83E'; // 초록
-                else alertBox.style.backgroundColor = '#FFBB00'; // 주황
-                
+            if(status === 'success') {
+                alertBox.style.backgroundColor = '#47C83E';
             } else {
-                // 미등록 차량
-                document.getElementById('resAllNum').innerText = "조회 결과 없음";
-                document.getElementById('resStatus').innerText = "미등록 차량";
-                document.getElementById('resDesc').innerText = "방문 정보를 확인하세요";
-                document.getElementById('resPenalty').innerText = "";
-                alertBox.style.backgroundColor = '#FF3636'; // 빨강
+                alertBox.style.backgroundColor = '#FFBB00';
             }
 
             alertContainer.style.display = 'flex';
-            document.getElementById('carField').value = "";
+            pwInput.value = "";
 
-            // 2.5초 후 닫기
             setTimeout(() => {
                 alertContainer.style.display = 'none';
-            }, 2500);
+            }, 2000);
+        }
+
+        function validate() {
+            // 이 부분에 나중에 새로 구성하실 로직을 넣으시면 됩니다.
+            const pw = document.getElementById('pwField').value;
+            console.log("입력된 값:", pw);
         }
     </script>
 
