@@ -30,7 +30,9 @@
         }
         .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
         .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
-        .res-order { font-size: 30px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
+        
+        /* [수정] 순번 등록차량 문구: 30px -> 25px로 조정 */
+        .res-order { font-size: 25px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
         
         /* 분리선 및 위반횟수 스타일 */
         .res-error { 
@@ -66,7 +68,7 @@
         let errorData = []; 
         let alertTimer = null;
 
-        // 데이터를 확실히 다 불러온 후 실행되도록 Promise 처리 보강
+        // 데이터 로드 보강
         async function loadData() {
             try {
                 const [carRes, errRes] = await Promise.all([
@@ -75,10 +77,9 @@
                 ]);
                 carData = await carRes.json();
                 errorData = await errRes.json();
-                console.log("데이터 로드 완료: ", carData.length, "건 / 위반이력: ", errorData.length, "건");
+                console.log("데이터 로드 완료");
             } catch (err) {
                 console.error("파일 로드 오류:", err);
-                alert("데이터 파일을 읽어오지 못했습니다. 파일명을 확인해주세요.");
             }
         }
         loadData();
@@ -87,16 +88,14 @@
             const inputVal = document.getElementById('carNumberInput').value;
             if(inputVal.length < 4) return;
 
-            // 1. 차량 찾기
             const foundCar = carData.find(car => String(car.car_number_for).trim() === inputVal);
 
             if(foundCar) {
                 const order = foundCar.registration_order;
-                const fullNum = foundCar.car_number_all.trim(); // 공백 제거
+                const fullNum = foundCar.car_number_all.trim();
                 const orderText = `[${order}] 순번 등록차량입니다.`;
                 
-                // 2. 위반 횟수 찾기 (err.json에서 차량번호 매칭)
-                // 만약 동일 번호가 여러줄이면 합산하도록 filter & reduce 사용
+                // 위반 횟수 합산 로직
                 const violationCount = errorData
                     .filter(err => String(err.차량번호).trim() === fullNum)
                     .reduce((sum, curr) => sum + (Number(curr.위반횟수) || 0), 0);
@@ -110,7 +109,7 @@
 
                 showResult(fullNum, "입주민 차량입니다.", orderText, errorText, bgColor, 2000);
             } else {
-                showResult("미등록차량 입니다.", "방문차량정보를 확인해 주세요.", "", "", "#FF3636", 3000);
+                showResult("미등록", "등록되지 않은 차량입니다.", "", "", "#FF3636", 3000);
             }
         }
 
@@ -122,7 +121,12 @@
             document.getElementById('resOrder').innerText = order;
             
             const errorEl = document.getElementById('resError');
-            if (error) {
+            if (error && error.includes("[") && !error.includes("[0]회")) {
+                // 위반 횟수가 0회가 아닐 때만 표시하거나, 요청에 따라 항상 표시 가능
+                errorEl.innerText = error;
+                errorEl.style.display = "block";
+            } else if (error && error.includes("[0]회")) {
+                // 0회일 때 문구는 넣되 표시하고 싶지 않다면 숨김 처리 (현재는 0회도 표시하게 둠)
                 errorEl.innerText = error;
                 errorEl.style.display = "block";
             } else {
@@ -143,4 +147,3 @@
     </script>
 </body>
 </html>
-
