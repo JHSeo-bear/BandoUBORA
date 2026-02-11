@@ -5,209 +5,129 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>주차관리</title>
 
-    <link rel="apple-touch-icon" href="apticon.png?v=1">
-    <link rel="icon" type="image/png" href="apticon.png?v=1">
-    <link rel="shortcut icon" href="apticon.png?v=1">
-    
-    <meta name="theme-color" content="#1e2a5a">
-    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="주차관리">
+    <link rel="apple-touch-icon" href="apticon.png?v=3">
 
+    <link rel="icon" type="image/png" href="apticon.png?v=3">
+    <meta name="theme-color" content="#1e2a5a">
+    
     <style>
-        body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7fa; }
-        .container { width: 85%; max-width: 320px; text-align: center; }
-        .instruction-text { font-size: 20px; color: #2c3e50; font-weight: 700; margin-bottom: 20px; }
-        input[type="text"] {
-            width: 100%; padding: 18px; margin-bottom: 15px; border: 1px solid #ddd; 
-            border-radius: 15px; box-sizing: border-box; font-size: 22px;
-            text-align: center; background-color: white; outline: none; font-weight: 800; color: #1e2a5a;
+        body { 
+            font-family: -apple-system, sans-serif; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; margin: 0; background-color: #f4f7fa; 
+            overflow: hidden; /* 어플 느낌을 위해 스크롤 방지 */
         }
-        .search-btn {
-            width: 100%; padding: 16px; background-color: #1e2a5a; color: white;
-            border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
+        .login-box { 
+            width: 85%; max-width: 320px; padding: 40px 20px;
+            background: white; border-radius: 25px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08); text-align: center;
         }
-
-        /* 중복 차량 선택 목록 스타일 */
-        #selectionBox {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(255,255,255,0.95); z-index: 1100; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .select-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #1e2a5a; }
-        .car-list { width: 80%; max-width: 300px; list-style: none; padding: 0; margin: 0; }
-        .car-item { 
-            background: #fff; border: 2px solid #1e2a5a; border-radius: 15px; 
-            padding: 15px; margin-bottom: 10px; font-size: 18px; font-weight: 700; 
-            text-align: center; cursor: pointer; color: #1e2a5a;
+        
+        .lock-img {
+            width: 70px; height: auto; margin-bottom: 15px;
+            display: block; margin-left: auto; margin-right: auto;
         }
 
-        /* 결과 팝업 */
+        h2 { 
+            font-size: 30px; color: #2c3e50; margin-bottom: 30px; 
+            margin-top: 0; font-weight: 700; letter-spacing: -1px;
+        }
+
+        input[type="password"] {
+            width: 100%; padding: 16px; margin-bottom: 15px;
+            border: 1px solid #eee; border-radius: 12px;
+            box-sizing: border-box; font-size: 16px;
+            text-align: center; background-color: #f9f9f9; outline: none;
+        }
+        .login-btn {
+            width: 100%; padding: 16px;
+            background-color: #1e2a5a; color: white;
+            border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 35px;
+        }
+        .brand-logo { width: 150px; height: auto; display: block; margin: 0 auto 10px auto; }
+        .office-text { font-size: 0.95rem; color: #555; font-weight: 500; }
+
         #customAlert {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000;
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; background: rgba(0,0,0,0.4);
+            justify-content: center; align-items: center; z-index: 1000;
         }
         .alert-content {
-            width: 85%; max-width: 280px; padding: 40px 20px; border-radius: 25px; 
-            text-align: center; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            transition: background-color 0.3s ease;
+            width: 75%; max-width: 260px;
+            padding: 30px 20px; border-radius: 20px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s;
         }
-        .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
-        .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
-        .res-order { font-size: 25px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
-        .res-error { font-size: 18px; font-weight: 600; display: block; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.5); }
-
-        /* 오이천사 실행 버튼 스타일 추가 */
-        .oitok-run-btn {
-            display: none; margin-top: 25px; padding: 15px; 
-            background-color: #ffffff; color: #FF3636; 
-            border-radius: 12px; font-weight: 800; font-size: 16px;
-            cursor: pointer; border: none; width: 100%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+        .alert-msg { font-size: 1.1rem; color: white; font-weight: 700; line-height: 1.5; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="instruction-text">차량번호를 입력해주세요</div>
-        <input type="text" inputmode="numeric" placeholder="번호 4자리" id="carNumberInput" maxlength="4"
+    <div class="login-box">
+        <img src="Security.png" alt="Security" class="lock-img">
+        <h2>관리자 로그인</h2>
+        <input type="password" 
+               inputmode="numeric" 
+               pattern="[0-9]*" 
+               placeholder="비밀번호를 입력하세요" 
+               id="pwField"
+               maxlength="4"
                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
-        <button class="search-btn" onclick="runSearch()">조회하기</button>
+        
+        <button class="login-btn" onclick="validate()">확인</button>
+        
+        <img src="login.png" alt="로고" class="brand-logo">
+        <div class="office-text">오창반도유보라 관리사무소</div>
     </div>
 
-    <div id="selectionBox">
-        <div class="select-title">해당하는 차량을 선택하세요</div>
-        <ul id="carList" class="car-list"></ul>
-    </div>
-
-    <div id="customAlert" onclick="closeAlert()">
-        <div id="alertBox" class="alert-content" onclick="event.stopPropagation()">
-            <div id="resFullNum" class="res-full-num"></div>
-            <div id="resMsg" class="res-msg"></div>
-            <div id="resOrder" class="res-order"></div>
-            <div id="resError" class="res-error"></div>
-            <button id="oitokBtn" class="oitok-run-btn" onclick="launchOitok()">오이천사 앱 바로 실행</button>
+    <div id="customAlert">
+        <div id="alertBox" class="alert-content">
+            <div id="alertMsg" class="alert-msg"></div>
         </div>
     </div>
 
     <script>
-        let carData = [];
-        let errorData = []; 
-        let alertTimer = null;
+        function showAutoAlert(msg) {
+            const alertContainer = document.getElementById('customAlert');
+            const alertBox = document.getElementById('alertBox');
+            const alertMsg = document.getElementById('alertMsg');
+            const pwInput = document.getElementById('pwField');
 
-        async function loadData() {
-            try {
-                const now = Date.now(); // 캐시 방지
-                const [carRes, errRes] = await Promise.all([
-                    fetch(`carDB.json?v=${now}`),
-                    fetch(`err.json?v=${now}`)
-                ]);
-                carData = await carRes.json();
-                errorData = await errRes.json();
-                console.log("데이터 로드 완료");
-            } catch (err) {
-                console.error("파일 로드 오류:", err);
-            }
-        }
-        loadData();
+            alertMsg.innerText = msg;
+            alertBox.style.backgroundColor = '#FFBB00'; 
 
-        function runSearch() {
-            const inputVal = document.getElementById('carNumberInput').value;
-            if(inputVal.length < 4) return;
+            alertContainer.style.display = 'flex';
+            pwInput.value = "";
 
-            const matches = carData.filter(car => String(car.car_number_for).trim() === inputVal);
-            const oitokBtn = document.getElementById('oitokBtn');
-
-            if (matches.length > 1) {
-                showSelectionList(matches);
-            } else if (matches.length === 1) {
-                oitokBtn.style.display = 'none'; // 입주민이면 버튼 숨김
-                processSelection(matches[0]);
-            } else {
-                // 미등록 차량일 때 오이천사 버튼 표시
-                oitokBtn.style.display = 'block';
-                showResult("미등록차량 입니다.", "방문차량정보를 확인해주세요.", "", "", "#FF3636", 8000);
-            }
-        }
-
-        // 오이천사 앱 실행 함수
-        function launchOitok() {
-            const packageName = "net.gntalk.parkingmanager"; 
-            const intentUri = `intent://#Intent;scheme=oitok;package=${packageName};end`;
-
-            // 실행 시도
-            location.href = intentUri;
-
-            // 앱이 없을 경우를 대비해 플레이스토어로 연결
             setTimeout(() => {
-                if (document.visibilityState === 'visible') {
-                    if (confirm("오이천사 앱이 열리지 않았나요?\n플레이스토어로 이동하시겠습니까?")) {
-                        location.href = "https://play.google.com/store/apps/details?id=" + packageName;
-                    }
-                }
+                alertContainer.style.display = 'none';
             }, 2000);
         }
 
-        function showSelectionList(cars) {
-            const listEl = document.getElementById('carList');
-            listEl.innerHTML = '';
-            cars.forEach(car => {
-                const li = document.createElement('li');
-                li.className = 'car-item';
-                li.innerText = car.car_number_all;
-                li.onclick = () => {
-                    document.getElementById('selectionBox').style.display = 'none';
-                    processSelection(car);
-                };
-                listEl.appendChild(li);
-            });
-            document.getElementById('selectionBox').style.display = 'flex';
-        }
-
-        function processSelection(car) {
-            const order = car.registration_order;
-            const fullNum = car.car_number_all.trim();
-            const orderText = `[${order}] 순번 등록차량입니다.`;
+        function validate() {
+            const pw = document.getElementById('pwField').value;
             
-            const violationCount = errorData
-                .filter(err => String(err.차량번호).trim() === fullNum)
-                .reduce((sum, curr) => sum + (Number(curr.위반횟수) || 0), 0);
-            
-            const errorText = `주차규정 위반횟수 [${violationCount}]회`;
-
-            let bgColor = "#1DDB16"; 
-            if (order === 1) bgColor = "#368AFF";      
-            else if (order === 3) bgColor = "#FFBB00"; 
-            else if (order === 4) bgColor = "#FF00DD"; 
-
-            showResult(fullNum, "입주민 차량입니다.", orderText, errorText, bgColor, 4000);
-        }
-
-        function showResult(fullNum, msg, order, error, bgColor, duration) {
-            if(alertTimer) clearTimeout(alertTimer);
-
-            document.getElementById('resFullNum').innerText = fullNum;
-            document.getElementById('resMsg').innerText = msg;
-            document.getElementById('resOrder').innerText = order;
-            
-            const errorEl = document.getElementById('resError');
-            if (error) {
-                errorEl.innerText = error;
-                errorEl.style.display = "block";
+            if(pw === "1257") {
+                // 성공 시 메인 조회 페이지로 이동
+                window.location.replace("main.html");
             } else {
-                errorEl.style.display = "none";
+                showAutoAlert("비밀번호를 다시 확인해주세요!");
             }
-
-            document.getElementById('alertBox').style.backgroundColor = bgColor;
-            document.getElementById('customAlert').style.display = 'flex';
-            
-            alertTimer = setTimeout(closeAlert, duration);
         }
 
-        function closeAlert() {
-            if(alertTimer) clearTimeout(alertTimer);
-            document.getElementById('customAlert').style.display = 'none';
-            document.getElementById('carNumberInput').value = ""; 
-        }
+        document.getElementById('pwField').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') validate();
+        });
     </script>
 </body>
 </html>
