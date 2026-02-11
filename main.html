@@ -120,19 +120,15 @@
                 oitokBtn.style.display = 'none';
                 processSelection(matches[0]);
             } else {
-                // 미등록 차량일 때 버튼 활성화 및 결과 표시
                 oitokBtn.style.display = 'block';
                 showResult("미등록차량 입니다.", "방문차량정보를 확인해주세요.", "", "", "#FF3636", 8000);
             }
         }
 
-        // 앱 바로 실행 로직
         function launchOitok() {
             const packageName = "net.gntalk.parkingmanager"; 
-            // 안드로이드 앱의 메인 액티비티를 직접 호출하는 인텐트 스킴
-            const intentUri = `intent://scan#Intent;scheme=oitok;package=${packageName};end`;
-            
-            // 앱 실행 시도
+            // 시스템에 해당 패키지 실행을 강제하는 표준 인텐트 구조입니다.
+            const intentUri = `intent://scan#Intent;scheme=oitok;package=${packageName};action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;end`;
             location.href = intentUri;
         }
 
@@ -183,7 +179,6 @@
             if (error) {
                 errorEl.innerText = error;
                 errorEl.style.display = "block";
-                
                 if (error.includes("[0]회")) {
                     errorEl.style.color = "white";
                 } else {
