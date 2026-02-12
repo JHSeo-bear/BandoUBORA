@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>주차관리</title>
+    <title>주차관리 시스템</title>
 
     <link rel="apple-touch-icon" href="apticon.png?v=1">
     <link rel="icon" type="image/png" href="apticon.png?v=1">
@@ -14,7 +14,6 @@
     <meta name="apple-mobile-web-app-title" content="주차관리">
 
     <style>
-        /* 기존 디자인 그대로 유지 */
         body { 
             font-family: -apple-system, sans-serif; 
             display: flex; 
@@ -41,6 +40,7 @@
             border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
         }
 
+        /* 차량 선택 팝업 (번호 중복 시) */
         #selectionBox {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(255,255,255,0.95); z-index: 1100; flex-direction: column; align-items: center; justify-content: center;
@@ -53,6 +53,7 @@
             text-align: center; cursor: pointer; color: #1e2a5a;
         }
 
+        /* 결과 알림 팝업 */
         #customAlert {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000;
@@ -63,9 +64,8 @@
             transition: background-color 0.3s ease;
         }
         .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
-        /* 가족 리스트 가독성을 위해 폰트 사이즈 살짝 조정 */
         .res-msg { font-size: 18px; font-weight: 500; display: block; margin-bottom: 5px; line-height: 1.4; }
-        .res-order { font-size: 22px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
+        .res-order { font-size: 22px; font-weight: 800; display: block; margin-top: 10px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
         .res-error { font-size: 22px; font-weight: 600; display: block; margin-top: 15px; }
 
         .oitok-run-btn {
@@ -105,6 +105,9 @@
         let errorData = []; 
         let alertTimer = null;
 
+        // 문자열에서 숫자와 한글만 남기는 함수
+        const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
+
         async function loadData() {
             try {
                 const now = Date.now();
@@ -113,10 +116,18 @@
                     fetch(`err.json?v=${now}`)
                 ]);
                 carData = await carRes.json();
-                errorData = await errRes.json();
+                
+                // err.json 로드 실패 방어 코드
+                if (errRes.ok) {
+                    errorData = await errRes.json();
+                } else {
+                    errorData = [];
+                }
                 console.log("데이터 로드 완료");
             } catch (err) {
                 console.error("파일 로드 오류:", err);
+                if(!carData.length) carData = [];
+                if(!errorData.length) errorData = [];
             }
         }
         loadData();
@@ -126,6 +137,7 @@
             const oitokBtn = document.getElementById('oitokBtn');
             if(inputVal.length < 4) return;
 
+            const inputValClean = cleanText(inputVal);
             const matches = carData.filter(car => String(car.car_number_for).trim() === inputVal);
 
             if (matches.length > 1) {
@@ -135,9 +147,78 @@
                 oitokBtn.style.display = 'none';
                 processSelection(matches[0]);
             } else {
-                oitokBtn.style.display = 'block';
-                showResult("미등록 차량입니다.","","방문차량정보를 확인해주세요.", "", "#FF3636", 8000);
+                // --- 미등록 차량 처리 ---
+                oitokBtn.style.display = 'block'; 
+
+                // err.json에서 입력한 4자리로 끝나는 모든 차량 검색
+                const violationCount = errorData.filter(err => {
+                    const errNumClean = cleanText(err.차량번호);
+                    return errNumClean.endsWith(inputValClean);
+                }).length;
+
+                const errorMsg = violationCount > 0 
+                    ? `미등록차량 단속 횟수 [${violationCount}]회` 
+                    : "단속 이력이 없는 미등록 차량입니다.";
+
+                showResult("미등록 차량입니다.", "방문차량정보를 확인해주세요.", "외부인(미등록) 차량", errorMsg, "#FF3636", 8000);
             }
+        }
+
+        function processSelection(car) {
+            const fullNum = car.car_number_all.trim();
+            const dong = car.dong;
+            const ho = car.ho;
+            
+            // 1. 같은 세대 모든 차량 필터링
+            const familyCars = carData.filter(c => c.dong === dong && c.ho === ho)
+                                      .sort((a, b) => a.registration_order - b.registration_order);
+            
+            const familyInfo = familyCars.map(c => `[${c.registration_order}순위] ${c.car_number_all}`).join('<br>');
+            
+            // 2. 위반 횟수 계산 (전체 번호가 일치하는 경우)
+            const targetNumClean = cleanText(fullNum);
+            const violationCount = errorData.filter(err => cleanText(err.차량번호) === targetNumClean).length;
+            
+            const titleText = `${dong}동 ${ho}호 등록현황`;
+            const errorText = `주차규정 위반횟수 [${violationCount}]회`;
+
+            // 순번별 배경색
+            let bgColor = "#1DDB16"; 
+            if (car.registration_order === 1) bgColor = "#368AFF";      
+            else if (car.registration_order === 3) bgColor = "#FFBB00"; 
+            else if (car.registration_order === 4) bgColor = "#FF00DD"; 
+
+            showResult(fullNum, familyInfo, titleText, errorText, bgColor, 7000);
+        }
+
+        function showResult(fullNum, msg, order, error, bgColor, duration) {
+            if(alertTimer) clearTimeout(alertTimer);
+
+            document.getElementById('resFullNum').innerText = fullNum;
+            document.getElementById('resOrder').innerText = order;
+            document.getElementById('resMsg').innerHTML = msg; 
+            
+            const errorEl = document.getElementById('resError');
+            if (error) {
+                errorEl.innerText = error;
+                errorEl.style.display = "block";
+                // 0회이거나 미등록 안내인 경우 흰색, 위반 이력이 있으면 빨간색
+                errorEl.style.color = (error.includes("[0]회") || error.includes("없는")) ? "white" : "#FF3636";
+                errorEl.style.opacity = "1"; 
+            } else {
+                errorEl.style.display = "none";
+            }
+
+            document.getElementById('alertBox').style.backgroundColor = bgColor;
+            document.getElementById('customAlert').style.display = 'flex';
+            
+            alertTimer = setTimeout(closeAlert, duration);
+        }
+
+        function closeAlert() {
+            if(alertTimer) clearTimeout(alertTimer);
+            document.getElementById('customAlert').style.display = 'none';
+            document.getElementById('carNumberInput').value = ""; 
         }
 
         function launchOitok() {
@@ -146,7 +227,7 @@
             location.href = intentUri;
             setTimeout(() => {
                 if (document.visibilityState === 'visible') {
-                    if(confirm("앱이 실행되지 않았나요?\n수동 실행을 위해 마켓 페이지로 이동합니다.")) {
+                    if(confirm("앱이 실행되지 않았나요?\n마켓으로 이동하시겠습니까?")) {
                         location.href = `market://details?id=${packageName}`;
                     }
                 }
@@ -168,70 +249,6 @@
             });
             document.getElementById('selectionBox').style.display = 'flex';
         }
-
-        // --- 여기서부터 핵심 수정 구간입니다 ---
-        function processSelection(car) {
-            const fullNum = car.car_number_all.trim();
-            const dong = car.dong;
-            const ho = car.ho;
-            
-            // 1. 같은 세대 모든 차량 필터링 및 정렬
-            const familyCars = carData.filter(c => c.dong === dong && c.ho === ho)
-                                      .sort((a, b) => a.registration_order - b.registration_order);
-            
-            // 2. 가족 차량 리스트 문자열 생성 (<br> 사용)
-            const familyInfo = familyCars.map(c => `[${c.registration_order}순위] ${c.car_number_all}`).join('<br>');
-            
-            // 3. 위반 횟수 계산 강화 (특수문자/공백 제거 비교)
-            const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
-            const targetNumClean = cleanText(fullNum);
-            
-            const violationCount = errorData.filter(err => {
-                return cleanText(err.차량번호) === targetNumClean;
-            }).length;
-            
-            const titleText = `${dong}동 ${ho}호 등록현황`;
-            const errorText = `주차규정 위반횟수 [${violationCount}]회`;
-
-            let bgColor = "#1DDB16"; 
-            if (car.registration_order === 1) bgColor = "#368AFF";      
-            else if (car.registration_order === 3) bgColor = "#FFBB00"; 
-            else if (car.registration_order === 4) bgColor = "#FF00DD"; 
-
-            showResult(fullNum, familyInfo, titleText, errorText, bgColor, 7000);
-        }
-
-        function showResult(fullNum, msg, order, error, bgColor, duration) {
-            if(alertTimer) clearTimeout(alertTimer);
-
-            document.getElementById('resFullNum').innerText = fullNum;
-            document.getElementById('resOrder').innerText = order;
-            document.getElementById('resMsg').innerHTML = msg; // innerHTML로 변경하여 <br> 인식
-            
-            const errorEl = document.getElementById('resError');
-            if (error) {
-                errorEl.innerText = error;
-                errorEl.style.display = "block";
-                errorEl.style.color = error.includes("[0]회") ? "white" : "#FF3636";
-                errorEl.style.opacity = "1"; 
-            } else {
-                errorEl.style.display = "none";
-            }
-
-            document.getElementById('alertBox').style.backgroundColor = bgColor;
-            document.getElementById('customAlert').style.display = 'flex';
-            
-            alertTimer = setTimeout(closeAlert, duration);
-        }
-
-        function closeAlert() {
-            if(alertTimer) clearTimeout(alertTimer);
-            document.getElementById('customAlert').style.display = 'none';
-            document.getElementById('carNumberInput').value = ""; 
-        }
     </script>
 </body>
 </html>
-
-
-
