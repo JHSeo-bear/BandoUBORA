@@ -14,7 +14,7 @@
     <meta name="apple-mobile-web-app-title" content="주차관리">
 
     <style>
-        /* 화면 정중앙 배치에서 위로 약간 올리기 위해 margin-bottom 추가 */
+        /* 기존 디자인 그대로 유지 */
         body { 
             font-family: -apple-system, sans-serif; 
             display: flex; 
@@ -28,7 +28,6 @@
             width: 85%; 
             max-width: 320px; 
             text-align: center; 
-            /* 중앙보다 약간 위로 올리기 위한 설정 (숫자가 클수록 더 위로 올라갑니다) */
             margin-bottom: 20vh; 
         }
         .instruction-text { font-size: 20px; color: #2c3e50; font-weight: 700; margin-bottom: 20px; }
@@ -64,9 +63,10 @@
             transition: background-color 0.3s ease;
         }
         .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
-        .res-msg { font-size: 22px; font-weight: 500; display: block; margin-bottom: 5px; }
-        .res-order { font-size: 25px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; }
-        .res-error { font-size: 25px; font-weight: 600; display: block; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.5); }
+        /* 가족 리스트 가독성을 위해 폰트 사이즈 살짝 조정 */
+        .res-msg { font-size: 18px; font-weight: 500; display: block; margin-bottom: 5px; line-height: 1.4; }
+        .res-order { font-size: 22px; font-weight: 800; display: block; opacity: 1; margin-top: 10px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
+        .res-error { font-size: 22px; font-weight: 600; display: block; margin-top: 15px; }
 
         .oitok-run-btn {
             display: none; margin-top: 25px; padding: 15px; 
@@ -93,8 +93,8 @@
     <div id="customAlert" onclick="closeAlert()">
         <div id="alertBox" class="alert-content" onclick="event.stopPropagation()">
             <div id="resFullNum" class="res-full-num"></div>
-            <div id="resMsg" class="res-msg"></div>
             <div id="resOrder" class="res-order"></div>
+            <div id="resMsg" class="res-msg"></div>
             <div id="resError" class="res-error"></div>
             <button id="oitokBtn" class="oitok-run-btn" onclick="launchOitok()">오이천사 앱 바로 실행</button>
         </div>
@@ -136,21 +136,17 @@
                 processSelection(matches[0]);
             } else {
                 oitokBtn.style.display = 'block';
-                showResult("미등록차량 입니다.", "방문차량정보를 확인해주세요.", "", "", "#FF3636", 8000);
+                showResult("미등록차량", "방문차량정보를 확인해주세요.", "등록되지 않은 차량입니다.", "", "#FF3636", 8000);
             }
         }
 
-        // --- 앱 실행 로직 강화 (최종 추천 코드) ---
         function launchOitok() {
             const packageName = "net.gntalk.parkingmanager";
             const intentUri = `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${packageName};end`;
-            
             location.href = intentUri;
-
             setTimeout(() => {
                 if (document.visibilityState === 'visible') {
-                    const check = confirm("앱이 실행되지 않았나요?\n수동 실행을 위해 확인을 누르시면 마켓 페이지로 이동합니다.\n(마켓에서 '열기'를 누르면 즉시 실행됩니다.)");
-                    if(check) {
+                    if(confirm("앱이 실행되지 않았나요?\n수동 실행을 위해 마켓 페이지로 이동합니다.")) {
                         location.href = `market://details?id=${packageName}`;
                     }
                 }
@@ -163,7 +159,7 @@
             cars.forEach(car => {
                 const li = document.createElement('li');
                 li.className = 'car-item';
-                li.innerText = car.car_number_all;
+                li.innerText = `${car.car_number_all} (${car.dong}동 ${car.ho}호)`;
                 li.onclick = () => {
                     document.getElementById('selectionBox').style.display = 'none';
                     processSelection(car);
@@ -173,41 +169,50 @@
             document.getElementById('selectionBox').style.display = 'flex';
         }
 
+        // --- 여기서부터 핵심 수정 구간입니다 ---
         function processSelection(car) {
-            const order = car.registration_order;
             const fullNum = car.car_number_all.trim();
-            const orderText = `[${order}] 순번 등록차량입니다.`;
-            const targetNum = fullNum.replace(/\s+/g, "");
-            const violationCount = errorData.filter(err => 
-                String(err.차량번호 || "").replace(/\s+/g, "") === targetNum
-            ).length;
+            const dong = car.dong;
+            const ho = car.ho;
             
+            // 1. 같은 세대 모든 차량 필터링 및 정렬
+            const familyCars = carData.filter(c => c.dong === dong && c.ho === ho)
+                                      .sort((a, b) => a.registration_order - b.registration_order);
+            
+            // 2. 가족 차량 리스트 문자열 생성 (<br> 사용)
+            const familyInfo = familyCars.map(c => `[${c.registration_order}순위] ${c.car_number_all}`).join('<br>');
+            
+            // 3. 위반 횟수 계산 강화 (특수문자/공백 제거 비교)
+            const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
+            const targetNumClean = cleanText(fullNum);
+            
+            const violationCount = errorData.filter(err => {
+                return cleanText(err.차량번호) === targetNumClean;
+            }).length;
+            
+            const titleText = `${dong}동 ${ho}호 등록현황`;
             const errorText = `주차규정 위반횟수 [${violationCount}]회`;
 
             let bgColor = "#1DDB16"; 
-            if (order === 1) bgColor = "#368AFF";      
-            else if (order === 3) bgColor = "#FFBB00"; 
-            else if (order === 4) bgColor = "#FF00DD"; 
+            if (car.registration_order === 1) bgColor = "#368AFF";      
+            else if (car.registration_order === 3) bgColor = "#FFBB00"; 
+            else if (car.registration_order === 4) bgColor = "#FF00DD"; 
 
-            showResult(fullNum, "입주민 차량입니다.", orderText, errorText, bgColor, 4000);
+            showResult(fullNum, familyInfo, titleText, errorText, bgColor, 7000);
         }
 
         function showResult(fullNum, msg, order, error, bgColor, duration) {
             if(alertTimer) clearTimeout(alertTimer);
 
             document.getElementById('resFullNum').innerText = fullNum;
-            document.getElementById('resMsg').innerText = msg;
             document.getElementById('resOrder').innerText = order;
+            document.getElementById('resMsg').innerHTML = msg; // innerHTML로 변경하여 <br> 인식
             
             const errorEl = document.getElementById('resError');
             if (error) {
                 errorEl.innerText = error;
                 errorEl.style.display = "block";
-                if (error.includes("[0]회")) {
-                    errorEl.style.color = "white";
-                } else {
-                    errorEl.style.color = "#FF3636";
-                }
+                errorEl.style.color = error.includes("[0]회") ? "white" : "#FF3636";
                 errorEl.style.opacity = "1"; 
             } else {
                 errorEl.style.display = "none";
