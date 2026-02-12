@@ -157,10 +157,10 @@
                 }).length;
 
                 const errorMsg = violationCount > 0 
-                    ? `미등록차량 단속 횟수 [${violationCount}]회` 
-                    : "단속 이력이 없는 미등록 차량입니다.";
+                    ? `미등록 단속 횟수 [${violationCount}]회` 
+                    : "";
 
-                showResult("미등록 차량입니다.", "방문차량정보를 확인해주세요.", "외부인(미등록) 차량", errorMsg, "#FF3636", 8000);
+                showResult("미등록 차량입니다.", "방문차량정보를 확인해주세요.", "", errorMsg, "#FF3636", 8000);
             }
         }
 
@@ -252,3 +252,4 @@
     </script>
 </body>
 </html>
+
