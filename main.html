@@ -19,7 +19,6 @@
         .res-order { font-size: 22px; font-weight: 800; display: block; margin-top: 10px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
         .res-error { font-size: 22px; font-weight: 600; display: block; margin-top: 15px; }
 
-        /* 차량구분 버튼 디자인 */
         .btn-container { display: flex; gap: 10px; margin-top: 25px; }
         .type-btn { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 800; font-size: 17px; cursor: pointer; background: white; }
         .btn-normal { color: #1e2a5a; }
@@ -58,7 +57,6 @@
         let carData = [], errorData = [], alertTimer = null;
         let currentSearchData = { num: "", info: "", status: "" };
 
-        // 구글 폼 설정 (car_info 번호 538150499 적용 완료)
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
         const ENTRY_IDS = {
             time: "entry.1296466587",
@@ -68,36 +66,31 @@
             car_info: "entry.538150499"
         };
 
-        function confirmType(type) {
-            const params = new URLSearchParams();
-            params.append(ENTRY_IDS.time, new Date().toLocaleString('ko-KR'));
-            params.append(ENTRY_IDS.car_num, currentSearchData.num);
-            params.append(ENTRY_IDS.info, currentSearchData.info);
-            params.append(ENTRY_IDS.status, currentSearchData.status);
-            params.append(ENTRY_IDS.car_info, type);
-
-            fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body: params });
-            closeAlert();
-        }
-
         async function loadData() {
             try {
                 const now = Date.now();
-                const [c, e] = await Promise.all([fetch(`carDB.json?v=${now}`), fetch(`err.json?v=${now}`)]);
-                carData = await c.json(); errorData = e.ok ? await e.json() : [];
-            } catch (err) { console.error(err); }
+                const [c, e] = await Promise.all([
+                    fetch(`carDB.json?v=${now}`).then(r => r.json()),
+                    fetch(`err.json?v=${now}`).then(r => r.ok ? r.json() : [])
+                ]);
+                carData = c; errorData = e;
+            } catch (err) { console.error("데이터 로드 실패:", err); }
         }
         loadData();
 
         function runSearch() {
             const val = document.getElementById('carNumberInput').value;
             if(val.length < 4) return;
-            const matches = carData.filter(c => String(c.car_number_for) === val);
-            if (matches.length > 1) showSelection(matches);
-            else if (matches.length === 1) process(matches[0]);
-            else {
+            const matches = carData.filter(c => String(c.car_number_for).trim() === val);
+            
+            if (matches.length > 1) {
+                showSelection(matches);
+            } else if (matches.length === 1) {
+                process(matches[0]);
+            } else {
                 currentSearchData = { num: val, info: "정보 없음", status: "❌ 미등록" };
-                showResult(val, "미등록 차량입니다.", "", "방문차량을 확인하세요", "#FF3636");
+                const viol = errorData.filter(e => String(e.차량번호).includes(val)).length;
+                showResult(val, "미등록 차량입니다.", "", viol > 0 ? `위반횟수: ${viol}회` : "방문차량을 확인하세요", "#FF3636");
             }
         }
 
@@ -106,8 +99,11 @@
             const info = `${car.dong}동 ${car.ho}호`;
             currentSearchData = { num: full, info: info, status: "✅ 등록차량" };
             
-            const family = carData.filter(c => c.dong === car.dong && c.ho === car.ho).map(c => `[${c.registration_order}순위] ${c.car_number_all}`).join('<br>');
-            const viol = errorData.filter(e => String(e.차량번호).includes(val)).length;
+            const family = carData.filter(c => c.dong === car.dong && c.ho === car.ho)
+                                 .sort((a,b) => a.registration_order - b.registration_order)
+                                 .map(c => `[${c.registration_order}순위] ${c.car_number_all}`).join('<br>');
+            
+            const viol = errorData.filter(e => String(e.차량번호).includes(car.car_number_for)).length;
             
             let color = "#1DDB16";
             if(car.registration_order === 1) color = "#368AFF";
@@ -125,7 +121,19 @@
             document.getElementById('resError').innerText = err;
             document.getElementById('alertBox').style.backgroundColor = color;
             document.getElementById('customAlert').style.display = 'flex';
-            alertTimer = setTimeout(closeAlert, 20000); // 전송 버튼을 누를 시간을 충분히 줌
+            alertTimer = setTimeout(closeAlert, 20000); 
+        }
+
+        function confirmType(type) {
+            const params = new URLSearchParams();
+            params.append(ENTRY_IDS.time, new Date().toLocaleString('ko-KR'));
+            params.append(ENTRY_IDS.car_num, currentSearchData.num);
+            params.append(ENTRY_IDS.info, currentSearchData.info);
+            params.append(ENTRY_IDS.status, currentSearchData.status);
+            params.append(ENTRY_IDS.car_info, type);
+
+            fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body: params });
+            closeAlert();
         }
 
         function closeAlert() {
