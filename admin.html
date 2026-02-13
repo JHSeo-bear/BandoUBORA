@@ -11,14 +11,13 @@
     <meta name="mobile-web-app-capable" content="yes">
     
     <style>
-        /* 기존 스타일 유지 */
         body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7fa; }
         .container { width: 85%; max-width: 320px; text-align: center; margin-bottom: 10vh; }
         .instruction-text { font-size: 20px; color: #2c3e50; font-weight: 700; margin-bottom: 20px; }
         input[type="text"] { width: 100%; padding: 18px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 15px; box-sizing: border-box; font-size: 22px; text-align: center; background-color: white; outline: none; font-weight: 800; color: #1e2a5a; }
         .search-btn { width: 100%; padding: 16px; background-color: #1e2a5a; color: white; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer; }
         
-        /* --- 조회 이력 확인 버튼 스타일 --- */
+        /* 조회 이력 버튼 스타일 */
         .history-btn { 
             width: 100%; padding: 12px; background-color: #ffffff; color: #1e2a5a; 
             border: 2px solid #1e2a5a; border-radius: 15px; font-size: 0.9rem; 
@@ -87,9 +86,9 @@
 
         const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
 
+        // 데이터 저장 및 시트 링크 설정
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
-        // 질문자님의 기록 확인용 구글 시트 주소를 여기에 넣으세요!
-        const HISTORY_URL = "https://docs.google.com/spreadsheets/d/1Xxxxxxxx/edit"; 
+        const HISTORY_URL = "https://docs.google.com/spreadsheets/d/177KRG2kEJFa6PXI1TFKEOIFMTiV22_6oy4lvjsHNFxU/edit?resourcekey=&gid=214788237#gid=214788237"; 
 
         const ENTRY_IDS = {
             time: "entry.1296466587",
@@ -158,9 +157,7 @@
             closeAlert();
         }
 
-        // --- 이력 확인 페이지 열기 함수 ---
         function openHistory() {
-            // 구글 시트 링크나 구글 폼 응답 요약 링크를 넣으시면 됩니다.
             window.open(HISTORY_URL, '_blank');
         }
 
