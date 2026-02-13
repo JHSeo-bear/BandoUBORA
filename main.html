@@ -39,7 +39,6 @@
             width: 100%; padding: 16px; background-color: #1e2a5a; color: white;
             border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
         }
-        /* 조회 이력 확인 버튼 스타일 */
         .history-btn {
             width: 100%; margin-top: 15px; padding: 12px; background: none; 
             border: 1.5px solid #1e2a5a; color: #1e2a5a; border-radius: 15px; 
@@ -87,7 +86,8 @@
         <input type="text" inputmode="numeric" placeholder="번호 4자리" id="carNumberInput" maxlength="4" autocomplete="one-time-code"
                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
         <button class="search-btn" onclick="runSearch()">조회하기</button>
-        <button class="history-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/본인의_시트_ID/edit')">📊 조회 이력 확인 (엑셀)</button>
+        
+        <button class="history-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/177KRG2kEJFa6PXI1TFKEOIFMTiV22_6oy4lvjsHNFxU/edit')">📊 조회 이력 확인 (엑셀)</button>
     </div>
 
     <div id="selectionBox">
@@ -110,7 +110,7 @@
         let errorData = []; 
         let alertTimer = null;
 
-        // --- [구글 폼 설정] ---
+        // 구글 폼 설정
         const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
         const ENTRY_IDS = {
             time: "entry.1296466587",
@@ -133,7 +133,7 @@
                 method: 'POST',
                 mode: 'no-cors',
                 body: formData
-            }).catch(err => console.error("로그 전송 실패", err));
+            }).catch(err => console.error("전송 오류", err));
         }
 
         const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
@@ -146,16 +146,9 @@
                     fetch(`err.json?v=${now}`)
                 ]);
                 carData = await carRes.json();
-                if (errRes.ok) {
-                    errorData = await errRes.json();
-                } else {
-                    errorData = [];
-                }
-                console.log("데이터 로드 완료");
+                errorData = errRes.ok ? await errRes.json() : [];
             } catch (err) {
-                console.error("파일 로드 오류:", err);
-                if(!carData.length) carData = [];
-                if(!errorData.length) errorData = [];
+                console.error("데이터 로드 실패", err);
             }
         }
         loadData();
@@ -165,7 +158,6 @@
             const oitokBtn = document.getElementById('oitokBtn');
             if(inputVal.length < 4) return;
 
-            const inputValClean = cleanText(inputVal);
             const matches = carData.filter(car => String(car.car_number_for).trim() === inputVal);
 
             if (matches.length > 1) {
@@ -175,76 +167,40 @@
                 oitokBtn.style.display = 'none';
                 processSelection(matches[0]);
             } else {
-                // 미등록 차량 로그 전송
                 sendLogToGoogle(inputVal, "정보 없음", "❌ 미등록");
-
                 oitokBtn.style.display = 'block'; 
-                const violationCount = errorData.filter(err => {
-                    const errNumClean = cleanText(err.차량번호);
-                    return errNumClean.endsWith(inputValClean);
-                }).length;
-
-                const errorMsg = violationCount > 0 
-                    ? `미등록 단속 횟수 [${violationCount}]회` 
-                    : "";
-
-                showResult("미등록 차량입니다.", "방문차량정보를 확인해주세요.", "", errorMsg, "#FF3636", 8000);
+                const violationCount = errorData.filter(err => cleanText(err.차량번호).endsWith(cleanText(inputVal))).length;
+                showResult("미등록 차량입니다.", "방문차량정보를 확인해주세요.", "", violationCount > 0 ? `미등록 단속 [${violationCount}]회` : "", "#FF3636", 8000);
             }
         }
 
         function processSelection(car) {
             const fullNum = car.car_number_all.trim();
-            const dong = car.dong;
-            const ho = car.ho;
-            
-            // 등록 차량 로그 전송
-            sendLogToGoogle(fullNum, `${dong}동 ${ho}호`, "✅ 등록차량");
+            sendLogToGoogle(fullNum, `${car.dong}동 ${car.ho}호`, "✅ 등록차량");
 
-            const familyCars = carData.filter(c => c.dong === dong && c.ho === ho)
-                                      .sort((a, b) => a.registration_order - b.registration_order);
-            
+            const familyCars = carData.filter(c => c.dong === car.dong && c.ho === car.ho).sort((a,b) => a.registration_order - b.registration_order);
             const familyInfo = familyCars.map(c => `[${c.registration_order}순위] ${c.car_number_all}`).join('<br>');
+            const violationCount = errorData.filter(err => cleanText(err.차량번호) === cleanText(fullNum)).length;
             
-            const targetNumClean = cleanText(fullNum);
-            const violationCount = errorData.filter(err => cleanText(err.차량번호) === targetNumClean).length;
-            
-            const titleText = `${dong}동 ${ho}호 등록현황`;
-            const errorText = `주차규정 위반횟수 [${violationCount}]회`;
-
             let bgColor = "#1DDB16"; 
             if (car.registration_order === 1) bgColor = "#368AFF";      
             else if (car.registration_order === 3) bgColor = "#FFBB00"; 
             else if (car.registration_order === 4) bgColor = "#FF00DD"; 
 
-            showResult(fullNum, familyInfo, titleText, errorText, bgColor, 7000);
+            showResult(fullNum, familyInfo, `${car.dong}동 ${car.ho}호 등록현황`, `주차규정 위반 [${violationCount}]회`, bgColor, 7000);
         }
 
         function showResult(fullNum, msg, order, error, bgColor, duration) {
             if(alertTimer) clearTimeout(alertTimer);
-
             document.getElementById('resFullNum').innerText = fullNum;
             document.getElementById('resOrder').innerText = order;
             document.getElementById('resMsg').innerHTML = msg; 
-            
             const errorEl = document.getElementById('resError');
-            if (error) {
-                errorEl.innerText = error;
-                errorEl.style.display = "block";
-                
-                if (bgColor === "#FF3636") {
-                    errorEl.style.color = "#FFEB3B"; 
-                } else {
-                    errorEl.style.color = (error.includes("[0]회")) ? "white" : "#FF3636";
-                }
-                
-                errorEl.style.opacity = "1"; 
-            } else {
-                errorEl.style.display = "none";
-            }
-
+            errorEl.innerText = error;
+            errorEl.style.display = error ? "block" : "none";
+            errorEl.style.color = (bgColor === "#FF3636") ? "#FFEB3B" : (error.includes("[0]회") ? "white" : "#FF3636");
             document.getElementById('alertBox').style.backgroundColor = bgColor;
             document.getElementById('customAlert').style.display = 'flex';
-            
             alertTimer = setTimeout(closeAlert, duration);
         }
 
@@ -256,15 +212,8 @@
 
         function launchOitok() {
             const packageName = "net.gntalk.parkingmanager";
-            const intentUri = `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${packageName};end`;
-            location.href = intentUri;
-            setTimeout(() => {
-                if (document.visibilityState === 'visible') {
-                    if(confirm("앱이 실행되지 않았나요?\n마켓으로 이동하시겠습니까?")) {
-                        location.href = `market://details?id=${packageName}`;
-                    }
-                }
-            }, 1500);
+            location.href = `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${packageName};end`;
+            setTimeout(() => { if (document.visibilityState === 'visible') location.href = `market://details?id=${packageName}`; }, 1500);
         }
 
         function showSelectionList(cars) {
@@ -273,11 +222,8 @@
             cars.forEach(car => {
                 const li = document.createElement('li');
                 li.className = 'car-item';
-                li.innerText = `${car.car_number_all} (${car.dong}동 ${car.ho}호)`;
-                li.onclick = () => {
-                    document.getElementById('selectionBox').style.display = 'none';
-                    processSelection(car);
-                };
+                li.innerText = `${car.car_number_all} (${car.dong}동 ${car.ho}ho)`;
+                li.onclick = () => { document.getElementById('selectionBox').style.display = 'none'; processSelection(car); };
                 listEl.appendChild(li);
             });
             document.getElementById('selectionBox').style.display = 'flex';
