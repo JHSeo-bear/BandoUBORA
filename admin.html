@@ -85,7 +85,6 @@
 
         const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
 
-        // 구글 폼 및 시트 정보 (수정됨)
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
         const HISTORY_URL = "https://docs.google.com/spreadsheets/d/177KRG2kEJFa6PXI1TFKEOIFMTiV22_6oy4lvjsHNFxU/edit?resourcekey=&gid=214788237#gid=214788237"; 
 
@@ -94,7 +93,8 @@
             car_num: "entry.1827352802",
             info: "entry.175331543",
             status: "entry.445061084",
-            car_info: "entry.120972837"
+            car_info: "entry.120972837",
+            status_info: "entry.1759997648" // 추가된 부분
         };
 
         async function loadData() {
@@ -114,7 +114,7 @@
             if (matches.length > 1) showSelectionList(matches);
             else if (matches.length === 1) processSelection(matches[0]);
             else {
-                currentSearchLog = { num: inputVal, info: "정보 없음", status: "❌ 미등록" };
+                currentSearchLog = { num: inputVal, info: "정보 없음", status: "❌ 미등록", regNum: "" };
                 const viol = errorData.filter(err => cleanText(err.차량번호).endsWith(cleanText(inputVal))).length;
                 showResult(inputVal, "미등록 차량입니다.", "방문차량정보 확인", viol > 0 ? `미등록 단속 [${viol}]회` : "", "#FF3636", 15000);
             }
@@ -123,7 +123,15 @@
         function processSelection(car) {
             const fullNum = car.car_number_all.trim();
             const dongHo = `${car.dong}동 ${car.ho}호`;
-            currentSearchLog = { num: fullNum, info: dongHo, status: "✅ 등록차량" };
+            
+            // regNum에 carDB.json의 registration_number 저장
+            currentSearchLog = { 
+                num: fullNum, 
+                info: dongHo, 
+                status: "✅ 등록차량",
+                regNum: car.registration_number || "" 
+            };
+
             const family = carData.filter(c => c.dong === car.dong && c.ho === car.ho).sort((a,b) => a.registration_order - b.registration_order);
             const familyInfo = family.map(c => `[${c.registration_order}순위] ${c.car_number_all}`).join('<br>');
             const viol = errorData.filter(err => cleanText(err.차량번호) === cleanText(fullNum)).length;
@@ -145,7 +153,6 @@
             alertTimer = setTimeout(closeAlert, duration);
         }
 
-        // 수정한 데이터 전송 함수 (car_info 입력 보강)
         function saveAndClose(type) {
             if (!currentSearchLog.num) {
                 closeAlert();
@@ -157,9 +164,9 @@
             params.append(ENTRY_IDS.car_num, currentSearchLog.num);
             params.append(ENTRY_IDS.info, currentSearchLog.info);
             params.append(ENTRY_IDS.status, currentSearchLog.status);
-            params.append(ENTRY_IDS.car_info, type); // "일반차" 또는 "경차" 전달
+            params.append(ENTRY_IDS.car_info, type);
+            params.append(ENTRY_IDS.status_info, currentSearchLog.regNum); // status_info 전송 추가
 
-            // 가장 확실한 문자열 전송 방식
             fetch(FORM_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -201,4 +208,3 @@
     </script>
 </body>
 </html>
-
