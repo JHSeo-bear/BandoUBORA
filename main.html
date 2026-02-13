@@ -4,128 +4,266 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>주차관리 시스템</title>
+
+    <link rel="apple-touch-icon" href="apticon.png?v=1">
+    <link rel="icon" type="image/png" href="apticon.png?v=1">
+    <link rel="shortcut icon" href="apticon.png?v=1">
+    
+    <meta name="theme-color" content="#1e2a5a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="주차관리">
+
     <style>
-        body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7fa; }
-        .container { width: 85%; max-width: 320px; text-align: center; margin-bottom: 20vh; }
+        body { 
+            font-family: -apple-system, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            background-color: #f4f7fa; 
+        }
+        .container { 
+            width: 85%; 
+            max-width: 320px; 
+            text-align: center; 
+            margin-bottom: 20vh; 
+        }
         .instruction-text { font-size: 20px; color: #2c3e50; font-weight: 700; margin-bottom: 20px; }
-        input[type="text"] { width: 100%; padding: 18px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 15px; box-sizing: border-box; font-size: 22px; text-align: center; font-weight: 800; color: #1e2a5a; }
-        .search-btn { width: 100%; padding: 16px; background-color: #1e2a5a; color: white; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer; }
-        .history-btn { width: 100%; margin-top: 15px; padding: 12px; background: none; border: 1.5px solid #1e2a5a; color: #1e2a5a; border-radius: 15px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
-        #customAlert { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
-        .alert-content { width: 85%; max-width: 280px; padding: 40px 20px; border-radius: 25px; text-align: center; color: white; }
-        .res-full-num { font-size: 26px; font-weight: 700; display: block; }
-        .res-msg { font-size: 18px; margin: 10px 0; display: block; }
-        .oitok-run-btn { display: none; margin-top: 25px; padding: 15px; background: white; color: #FF3636; border-radius: 12px; font-weight: 800; border: none; width: 100%; }
-        #selectionBox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1100; flex-direction: column; align-items: center; justify-content: center; }
-        .car-item { border: 2px solid #1e2a5a; border-radius: 15px; padding: 15px; margin: 10px; width: 80%; font-weight: 700; text-align: center; color: #1e2a5a; list-style: none; }
+        input[type="text"] {
+            width: 100%; padding: 18px; margin-bottom: 15px; border: 1px solid #ddd; 
+            border-radius: 15px; box-sizing: border-box; font-size: 22px;
+            text-align: center; background-color: white; outline: none; font-weight: 800; color: #1e2a5a;
+        }
+        .search-btn {
+            width: 100%; padding: 16px; background-color: #1e2a5a; color: white;
+            border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
+        }
+        /* 조회 이력 확인 버튼 스타일 */
+        .history-btn {
+            width: 100%; margin-top: 15px; padding: 12px; background: none; 
+            border: 1.5px solid #1e2a5a; color: #1e2a5a; border-radius: 15px; 
+            font-size: 0.9rem; font-weight: 600; cursor: pointer;
+        }
+
+        #selectionBox {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.95); z-index: 1100; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .select-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #1e2a5a; }
+        .car-list { width: 80%; max-width: 300px; list-style: none; padding: 0; margin: 0; }
+        .car-item { 
+            background: #fff; border: 2px solid #1e2a5a; border-radius: 15px; 
+            padding: 15px; margin-bottom: 10px; font-size: 18px; font-weight: 700; 
+            text-align: center; cursor: pointer; color: #1e2a5a;
+        }
+
+        #customAlert {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000;
+        }
+        .alert-content {
+            width: 85%; max-width: 280px; padding: 40px 20px; border-radius: 25px; 
+            text-align: center; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease;
+        }
+        .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
+        .res-msg { font-size: 18px; font-weight: 500; display: block; margin-bottom: 5px; line-height: 1.4; }
+        .res-order { font-size: 22px; font-weight: 800; display: block; margin-top: 10px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
+        .res-error { font-size: 22px; font-weight: 600; display: block; margin-top: 15px; }
+
+        .oitok-run-btn {
+            display: none; margin-top: 25px; padding: 15px; 
+            background-color: #ffffff; color: #FF3636; 
+            border-radius: 12px; font-weight: 800; font-size: 16px;
+            cursor: pointer; border: none; width: 100%;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="instruction-text">차량번호를 입력해주세요</div>
-        <input type="text" inputmode="numeric" placeholder="번호 4자리" id="carNumberInput" maxlength="4" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+        <input type="text" inputmode="numeric" placeholder="번호 4자리" id="carNumberInput" maxlength="4" autocomplete="one-time-code"
+               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
         <button class="search-btn" onclick="runSearch()">조회하기</button>
         <button class="history-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/177KRG2kEJFa6PXI1TFKEOIFMTiV22_6oy4lvjsHNFxU/edit')">📊 조회 이력 확인 (엑셀)</button>
     </div>
 
-    <div id="selectionBox"><ul id="carList"></ul></div>
+    <div id="selectionBox">
+        <div class="select-title">해당하는 차량을 선택하세요</div>
+        <ul id="carList" class="car-list"></ul>
+    </div>
 
     <div id="customAlert" onclick="closeAlert()">
-        <div id="alertBox" class="alert-content">
+        <div id="alertBox" class="alert-content" onclick="event.stopPropagation()">
             <div id="resFullNum" class="res-full-num"></div>
-            <div id="resOrder" style="font-size:20px; font-weight:800; margin-top:10px;"></div>
+            <div id="resOrder" class="res-order"></div>
             <div id="resMsg" class="res-msg"></div>
-            <div id="resError" style="font-weight:700; color:#FFEB3B;"></div>
-            <button id="oitokBtn" class="oitok-run-btn" onclick="launchOitok()">오이천사 앱 실행</button>
+            <div id="resError" class="res-error"></div>
+            <button id="oitokBtn" class="oitok-run-btn" onclick="launchOitok()">오이천사 앱 바로 실행</button>
         </div>
     </div>
 
     <script>
-        let carData = [], errorData = [], alertTimer = null;
+        let carData = [];
+        let errorData = []; 
+        let alertTimer = null;
 
-        // 구글 폼 전송 핵심 설정
-        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
+        // 구글 폼 설정 (단답형 연결)
+        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
+        const ENTRY_IDS = {
+            time: "entry.1296466587",
+            car_number: "entry.1827352802",
+            result_info: "entry.175331543",
+            status: "entry.445061084"
+        };
 
-        function sendLog(carNum, info, status) {
+        function sendLogToGoogle(carNum, info, status) {
             const now = new Date().toLocaleString('ko-KR');
-            const data = new URLSearchParams();
-            
-            // 질문자님의 설문지 순서에 맞춘 데이터 매칭
-            data.append("entry.1296466587", now);     // time
-            data.append("entry.1827352802", carNum);  // car_number
-            data.append("entry.175331543", info);     // result_info
-            data.append("entry.445061084", status);   // status
+            const params = new URLSearchParams();
+            params.append(ENTRY_IDS.time, now);
+            params.append(ENTRY_IDS.car_number, carNum);
+            params.append(ENTRY_IDS.result_info, info);
+            params.append(ENTRY_IDS.status, status);
 
-            fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body: data });
+            fetch(GOOGLE_FORM_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: params
+            });
         }
+
+        const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
 
         async function loadData() {
             try {
-                const [c, e] = await Promise.all([fetch('carDB.json'), fetch('err.json')]);
-                carData = await c.json(); errorData = await e.json();
-            } catch (err) { console.log("데이터 로드 전"); }
+                const now = Date.now();
+                const [carRes, errRes] = await Promise.all([
+                    fetch(`carDB.json?v=${now}`),
+                    fetch(`err.json?v=${now}`)
+                ]);
+                carData = await carRes.json();
+                errorData = errRes.ok ? await errRes.json() : [];
+            } catch (err) {
+                console.error("파일 로드 오류:", err);
+            }
         }
         loadData();
 
         function runSearch() {
-            const val = document.getElementById('carNumberInput').value;
-            if(val.length < 4) return;
-            const matches = carData.filter(c => String(c.car_number_for) === val);
-            if (matches.length > 1) showSelection(matches);
-            else if (matches.length === 1) process(matches[0]);
-            else {
-                sendLog(val, "정보 없음", "❌ 미등록");
-                document.getElementById('oitokBtn').style.display = 'block';
-                showResult(val, "미등록 차량입니다.", "", "방문차량을 확인하세요", "#FF3636");
+            const inputVal = document.getElementById('carNumberInput').value;
+            const oitokBtn = document.getElementById('oitokBtn');
+            if(inputVal.length < 4) return;
+
+            const inputValClean = cleanText(inputVal);
+            const matches = carData.filter(car => String(car.car_number_for).trim() === inputVal);
+
+            if (matches.length > 1) {
+                oitokBtn.style.display = 'none';
+                showSelectionList(matches);
+            } else if (matches.length === 1) {
+                oitokBtn.style.display = 'none';
+                processSelection(matches[0]);
+            } else {
+                // 미등록 차량 구글 시트 전송
+                sendLogToGoogle(inputVal, "정보 없음", "❌ 미등록");
+
+                oitokBtn.style.display = 'block'; 
+                const violationCount = errorData.filter(err => cleanText(err.차량번호).endsWith(inputValClean)).length;
+                const errorMsg = violationCount > 0 ? `미등록 단속 횟수 [${violationCount}]회` : "";
+
+                // 기존 팝업창 띄우기 (손대지 않음)
+                showResult("미등록 차량입니다.", "방문차량정보를 확인해주세요.", "", errorMsg, "#FF3636", 8000);
             }
         }
 
-        function process(car) {
-            const full = car.car_number_all;
-            const info = `${car.dong}동 ${car.ho}호`;
-            sendLog(full, info, "✅ 등록차량");
+        function processSelection(car) {
+            const fullNum = car.car_number_all.trim();
+            const dong = car.dong;
+            const ho = car.ho;
             
-            const family = carData.filter(c => c.dong === car.dong && c.ho === car.ho).map(c => `[${c.registration_order}순위] ${c.car_number_all}`).join('<br>');
-            const viol = errorData.filter(e => e.차량번호.includes(val)).length;
+            // 등록 차량 구글 시트 전송
+            sendLogToGoogle(fullNum, `${dong}동 ${ho}호`, "✅ 등록차량");
+
+            const familyCars = carData.filter(c => c.dong === dong && c.ho === ho)
+                                      .sort((a, b) => a.registration_order - b.registration_order);
             
-            let color = "#1DDB16";
-            if(car.registration_order === 1) color = "#368AFF";
-            else if(car.registration_order >= 3) color = "#FFBB00";
+            const familyInfo = familyCars.map(c => `[${c.registration_order}순위] ${c.car_number_all}`).join('<br>');
+            const violationCount = errorData.filter(err => cleanText(err.차량번호) === cleanText(fullNum)).length;
             
-            showResult(full, family, `${info} 등록현황`, viol > 0 ? `위반 건수: ${viol}회` : "", color);
+            const titleText = `${dong}동 ${ho}호 등록현황`;
+            const errorText = `주차규정 위반횟수 [${violationCount}]회`;
+
+            let bgColor = "#1DDB16"; 
+            if (car.registration_order === 1) bgColor = "#368AFF";      
+            else if (car.registration_order === 3) bgColor = "#FFBB00"; 
+            else if (car.registration_order === 4) bgColor = "#FF00DD"; 
+
+            // 기존 팝업창 띄우기 (손대지 않음)
+            showResult(fullNum, familyInfo, titleText, errorText, bgColor, 7000);
         }
 
-        function showResult(num, msg, order, err, color) {
-            document.getElementById('resFullNum').innerText = num;
+        function showResult(fullNum, msg, order, error, bgColor, duration) {
+            if(alertTimer) clearTimeout(alertTimer);
+
+            document.getElementById('resFullNum').innerText = fullNum;
             document.getElementById('resOrder').innerText = order;
-            document.getElementById('resMsg').innerHTML = msg;
-            document.getElementById('resError').innerText = err;
-            document.getElementById('alertBox').style.backgroundColor = color;
+            document.getElementById('resMsg').innerHTML = msg; 
+            
+            const errorEl = document.getElementById('resError');
+            if (error) {
+                errorEl.innerText = error;
+                errorEl.style.display = "block";
+                if (bgColor === "#FF3636") {
+                    errorEl.style.color = "#FFEB3B"; 
+                } else {
+                    errorEl.style.color = (error.includes("[0]회")) ? "white" : "#FF3636";
+                }
+                errorEl.style.opacity = "1"; 
+            } else {
+                errorEl.style.display = "none";
+            }
+
+            document.getElementById('alertBox').style.backgroundColor = bgColor;
             document.getElementById('customAlert').style.display = 'flex';
-            alertTimer = setTimeout(closeAlert, 7000);
+            
+            alertTimer = setTimeout(closeAlert, duration);
         }
 
-        function closeAlert() { 
-            document.getElementById('customAlert').style.display = 'none'; 
-            document.getElementById('carNumberInput').value = "";
-            document.getElementById('oitokBtn').style.display = 'none';
+        function closeAlert() {
+            if(alertTimer) clearTimeout(alertTimer);
+            document.getElementById('customAlert').style.display = 'none';
+            document.getElementById('carNumberInput').value = ""; 
         }
 
-        function showSelection(cars) {
-            const list = document.getElementById('carList');
-            list.innerHTML = '';
-            cars.forEach(c => {
+        function launchOitok() {
+            const packageName = "net.gntalk.parkingmanager";
+            location.href = `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${packageName};end`;
+            setTimeout(() => {
+                if (document.visibilityState === 'visible') {
+                    if(confirm("앱이 실행되지 않았나요? 마켓으로 이동하시겠습니까?")) {
+                        location.href = `market://details?id=${packageName}`;
+                    }
+                }
+            }, 1500);
+        }
+
+        function showSelectionList(cars) {
+            const listEl = document.getElementById('carList');
+            listEl.innerHTML = '';
+            cars.forEach(car => {
                 const li = document.createElement('li');
                 li.className = 'car-item';
-                li.innerText = `${c.car_number_all} (${c.dong}동 ${c.ho}호)`;
-                li.onclick = () => { document.getElementById('selectionBox').style.display = 'none'; process(c); };
-                list.appendChild(li);
+                li.innerText = `${car.car_number_all} (${car.dong}동 ${car.ho}호)`;
+                li.onclick = () => {
+                    document.getElementById('selectionBox').style.display = 'none';
+                    processSelection(car);
+                };
+                listEl.appendChild(li);
             });
             document.getElementById('selectionBox').style.display = 'flex';
         }
-        
-        function launchOitok() { location.href = "intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=net.gntalk.parkingmanager;end"; }
     </script>
 </body>
 </html>
