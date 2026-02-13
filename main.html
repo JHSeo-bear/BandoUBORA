@@ -4,37 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>주차관리 시스템</title>
+
     <link rel="apple-touch-icon" href="apticon.png?v=1">
     <link rel="icon" type="image/png" href="apticon.png?v=1">
     <link rel="shortcut icon" href="apticon.png?v=1">
+    
     <meta name="theme-color" content="#1e2a5a">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="주차관리">
 
     <style>
-        /* 기존 스타일 그대로 유지 */
-        body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7fa; }
-        .container { width: 85%; max-width: 320px; text-align: center; margin-bottom: 20vh; }
+        body { 
+            font-family: -apple-system, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            background-color: #f4f7fa; 
+        }
+        .container { 
+            width: 85%; 
+            max-width: 320px; 
+            text-align: center; 
+            margin-bottom: 20vh; 
+        }
         .instruction-text { font-size: 20px; color: #2c3e50; font-weight: 700; margin-bottom: 20px; }
-        input[type="text"] { width: 100%; padding: 18px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 15px; box-sizing: border-box; font-size: 22px; text-align: center; background-color: white; outline: none; font-weight: 800; color: #1e2a5a; }
-        .search-btn { width: 100%; padding: 16px; background-color: #1e2a5a; color: white; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer; }
-        #selectionBox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 1100; flex-direction: column; align-items: center; justify-content: center; }
+        input[type="text"] {
+            width: 100%; padding: 18px; margin-bottom: 15px; border: 1px solid #ddd; 
+            border-radius: 15px; box-sizing: border-box; font-size: 22px;
+            text-align: center; background-color: white; outline: none; font-weight: 800; color: #1e2a5a;
+        }
+        .search-btn {
+            width: 100%; padding: 16px; background-color: #1e2a5a; color: white;
+            border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
+        }
+
+        #selectionBox {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.95); z-index: 1100; flex-direction: column; align-items: center; justify-content: center;
+        }
         .select-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #1e2a5a; }
         .car-list { width: 80%; max-width: 300px; list-style: none; padding: 0; margin: 0; }
-        .car-item { background: #fff; border: 2px solid #1e2a5a; border-radius: 15px; padding: 15px; margin-bottom: 10px; font-size: 18px; font-weight: 700; text-align: center; cursor: pointer; color: #1e2a5a; }
-        #customAlert { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
-        .alert-content { width: 85%; max-width: 280px; padding: 40px 20px; border-radius: 25px; text-align: center; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: background-color 0.3s ease; }
+        .car-item { 
+            background: #fff; border: 2px solid #1e2a5a; border-radius: 15px; 
+            padding: 15px; margin-bottom: 10px; font-size: 18px; font-weight: 700; 
+            text-align: center; cursor: pointer; color: #1e2a5a;
+        }
+
+        #customAlert {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000;
+        }
+        .alert-content {
+            width: 85%; max-width: 280px; padding: 40px 20px; border-radius: 25px; 
+            text-align: center; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease;
+        }
         .res-full-num { font-size: 26px; font-weight: 700; margin-bottom: 8px; display: block; }
         .res-msg { font-size: 18px; font-weight: 500; display: block; margin-bottom: 5px; line-height: 1.4; }
         .res-order { font-size: 22px; font-weight: 800; display: block; margin-top: 10px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
         .res-error { font-size: 22px; font-weight: 600; display: block; margin-top: 15px; }
-        .oitok-run-btn { display: none; margin-top: 25px; padding: 15px; background-color: #ffffff; color: #FF3636; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; border: none; width: 100%; }
 
-        /* --- 추가된 일반차/경차 버튼 스타일 --- */
-        .car-type-container { display: flex; gap: 10px; margin-top: 20px; }
-        .type-btn { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; background: white; }
-        .btn-normal { color: #1e2a5a; }
-        .btn-compact { color: #ff00ea; }
+        .oitok-run-btn {
+            display: none; margin-top: 25px; padding: 15px; 
+            background-color: #ffffff; color: #FF3636; 
+            border-radius: 12px; font-weight: 800; font-size: 16px;
+            cursor: pointer; border: none; width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -57,13 +94,7 @@
             <div id="resOrder" class="res-order"></div>
             <div id="resMsg" class="res-msg"></div>
             <div id="resError" class="res-error"></div>
-            
             <button id="oitokBtn" class="oitok-run-btn" onclick="launchOitok()">오이천사 앱 바로 실행</button>
-
-            <div class="car-type-container">
-                <button class="type-btn btn-normal" onclick="saveAndClose('일반차')">일반차</button>
-                <button class="type-btn btn-compact" onclick="saveAndClose('경차')">경차</button>
-            </div>
         </div>
     </div>
 
@@ -71,19 +102,8 @@
         let carData = [];
         let errorData = []; 
         let alertTimer = null;
-        let currentSearchLog = {}; // 로그 저장용 임시 객체
 
         const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
-
-        // 구글 폼 설정 (제공해주신 entry 번호 적용)
-        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
-        const ENTRY_IDS = {
-            time: "entry.1296466587",
-            car_num: "entry.1827352802",
-            info: "entry.175331543",
-            status: "entry.445061084",
-            car_info: "entry.538150499"
-        };
 
         async function loadData() {
             try {
@@ -93,8 +113,17 @@
                     fetch(`err.json?v=${now}`)
                 ]);
                 carData = await carRes.json();
-                errorData = errRes.ok ? await errRes.json() : [];
-            } catch (err) { console.error("파일 로드 오류:", err); }
+                if (errRes.ok) {
+                    errorData = await errRes.json();
+                } else {
+                    errorData = [];
+                }
+                console.log("데이터 로드 완료");
+            } catch (err) {
+                console.error("파일 로드 오류:", err);
+                if(!carData.length) carData = [];
+                if(!errorData.length) errorData = [];
+            }
         }
         loadData();
 
@@ -103,6 +132,7 @@
             const oitokBtn = document.getElementById('oitokBtn');
             if(inputVal.length < 4) return;
 
+            const inputValClean = cleanText(inputVal);
             const matches = carData.filter(car => String(car.car_number_for).trim() === inputVal);
 
             if (matches.length > 1) {
@@ -113,61 +143,72 @@
                 processSelection(matches[0]);
             } else {
                 oitokBtn.style.display = 'block'; 
-                const violationCount = errorData.filter(err => cleanText(err.차량번호).endsWith(cleanText(inputVal))).length;
-                const errorMsg = violationCount > 0 ? `미등록 단속 횟수 [${violationCount}]회` : "";
-                
-                // 로그 데이터 준비
-                currentSearchLog = { num: inputVal, info: "정보 없음", status: "❌ 미등록" };
-                showResult("미등록 차량입니다.", "방문차량정보를 확인해주세요.", "", errorMsg, "#FF3636", 15000);
+
+                const violationCount = errorData.filter(err => {
+                    const errNumClean = cleanText(err.차량번호);
+                    return errNumClean.endsWith(inputValClean);
+                }).length;
+
+                const errorMsg = violationCount > 0 
+                    ? `미등록 단속 횟수 [${violationCount}]회` 
+                    : "";
+
+                showResult("미등록 차량입니다.", "방문차량정보를 확인해주세요.", "", errorMsg, "#FF3636", 8000);
             }
         }
 
         function processSelection(car) {
             const fullNum = car.car_number_all.trim();
-            const dongHo = `${car.dong}동 ${car.ho}호`;
-            const familyCars = carData.filter(c => c.dong === car.dong && c.ho === car.ho).sort((a, b) => a.registration_order - b.registration_order);
-            const familyInfo = familyCars.map(c => `[${c.registration_order}순위] ${c.car_number_all}`).join('<br>');
-            const violationCount = errorData.filter(err => cleanText(err.차량번호) === cleanText(fullNum)).length;
+            const dong = car.dong;
+            const ho = car.ho;
             
-            // 로그 데이터 준비
-            currentSearchLog = { num: fullNum, info: dongHo, status: "✅ 등록차량" };
+            const familyCars = carData.filter(c => c.dong === dong && c.ho === ho)
+                                      .sort((a, b) => a.registration_order - b.registration_order);
+            
+            const familyInfo = familyCars.map(c => `[${c.registration_order}순위] ${c.car_number_all}`).join('<br>');
+            
+            const targetNumClean = cleanText(fullNum);
+            const violationCount = errorData.filter(err => cleanText(err.차량번호) === targetNumClean).length;
+            
+            const titleText = `${dong}동 ${ho}호 등록현황`;
+            const errorText = `주차규정 위반횟수 [${violationCount}]회`;
 
             let bgColor = "#1DDB16"; 
             if (car.registration_order === 1) bgColor = "#368AFF";      
             else if (car.registration_order === 3) bgColor = "#FFBB00"; 
             else if (car.registration_order === 4) bgColor = "#FF00DD"; 
 
-            showResult(fullNum, familyInfo, `${dongHo} 등록현황`, `주차규정 위반횟수 [${violationCount}]회`, bgColor, 15000);
+            showResult(fullNum, familyInfo, titleText, errorText, bgColor, 7000);
         }
 
         function showResult(fullNum, msg, order, error, bgColor, duration) {
             if(alertTimer) clearTimeout(alertTimer);
+
             document.getElementById('resFullNum').innerText = fullNum;
             document.getElementById('resOrder').innerText = order;
             document.getElementById('resMsg').innerHTML = msg; 
-            const errorEl = document.getElementById('resError');
-            errorEl.innerText = error || "";
-            errorEl.style.display = error ? "block" : "none";
             
-            if (bgColor === "#FF3636") errorEl.style.color = "#FFEB3B"; 
-            else errorEl.style.color = (error.includes("[0]회")) ? "white" : "#FF3636";
+            const errorEl = document.getElementById('resError');
+            if (error) {
+                errorEl.innerText = error;
+                errorEl.style.display = "block";
+                
+                // --- 미등록 팝업(빨간배경)일 때 글자색을 노란색으로 변경 ---
+                if (bgColor === "#FF3636") {
+                    errorEl.style.color = "#FFEB3B"; 
+                } else {
+                    errorEl.style.color = (error.includes("[0]회")) ? "white" : "#FF3636";
+                }
+                
+                errorEl.style.opacity = "1"; 
+            } else {
+                errorEl.style.display = "none";
+            }
 
             document.getElementById('alertBox').style.backgroundColor = bgColor;
             document.getElementById('customAlert').style.display = 'flex';
+            
             alertTimer = setTimeout(closeAlert, duration);
-        }
-
-        // 버튼 클릭 시 호출되는 함수 (저장 후 닫기)
-        function saveAndClose(type) {
-            const params = new URLSearchParams();
-            params.append(ENTRY_IDS.time, new Date().toLocaleString('ko-KR'));
-            params.append(ENTRY_IDS.car_num, currentSearchLog.num);
-            params.append(ENTRY_IDS.info, currentSearchLog.info);
-            params.append(ENTRY_IDS.status, currentSearchLog.status);
-            params.append(ENTRY_IDS.car_info, type);
-
-            fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body: params });
-            closeAlert();
         }
 
         function closeAlert() {
@@ -178,17 +219,28 @@
 
         function launchOitok() {
             const packageName = "net.gntalk.parkingmanager";
-            location.href = `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${packageName};end`;
+            const intentUri = `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${packageName};end`;
+            location.href = intentUri;
+            setTimeout(() => {
+                if (document.visibilityState === 'visible') {
+                    if(confirm("앱이 실행되지 않았나요?\n마켓으로 이동하시겠습니까?")) {
+                        location.href = `market://details?id=${packageName}`;
+                    }
+                }
+            }, 1500);
         }
 
-        function showSelectionList(matches) {
+        function showSelectionList(cars) {
             const listEl = document.getElementById('carList');
             listEl.innerHTML = '';
-            matches.forEach(car => {
+            cars.forEach(car => {
                 const li = document.createElement('li');
                 li.className = 'car-item';
                 li.innerText = `${car.car_number_all} (${car.dong}동 ${car.ho}호)`;
-                li.onclick = () => { document.getElementById('selectionBox').style.display = 'none'; processSelection(car); };
+                li.onclick = () => {
+                    document.getElementById('selectionBox').style.display = 'none';
+                    processSelection(car);
+                };
                 listEl.appendChild(li);
             });
             document.getElementById('selectionBox').style.display = 'flex';
