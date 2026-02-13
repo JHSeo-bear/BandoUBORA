@@ -17,7 +17,6 @@
         input[type="text"] { width: 100%; padding: 18px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 15px; box-sizing: border-box; font-size: 22px; text-align: center; background-color: white; outline: none; font-weight: 800; color: #1e2a5a; }
         .search-btn { width: 100%; padding: 16px; background-color: #1e2a5a; color: white; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer; }
         
-        /* 조회 이력 버튼 스타일 */
         .history-btn { 
             width: 100%; padding: 12px; background-color: #ffffff; color: #1e2a5a; 
             border: 2px solid #1e2a5a; border-radius: 15px; font-size: 0.9rem; 
@@ -86,7 +85,7 @@
 
         const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
 
-        // 데이터 저장 및 시트 링크 설정
+        // 구글 폼 및 시트 정보 (수정됨)
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
         const HISTORY_URL = "https://docs.google.com/spreadsheets/d/177KRG2kEJFa6PXI1TFKEOIFMTiV22_6oy4lvjsHNFxU/edit?resourcekey=&gid=214788237#gid=214788237"; 
 
@@ -146,14 +145,30 @@
             alertTimer = setTimeout(closeAlert, duration);
         }
 
+        // 수정한 데이터 전송 함수 (car_info 입력 보강)
         function saveAndClose(type) {
+            if (!currentSearchLog.num) {
+                closeAlert();
+                return;
+            }
+
             const params = new URLSearchParams();
             params.append(ENTRY_IDS.time, new Date().toLocaleString('ko-KR'));
             params.append(ENTRY_IDS.car_num, currentSearchLog.num);
             params.append(ENTRY_IDS.info, currentSearchLog.info);
             params.append(ENTRY_IDS.status, currentSearchLog.status);
-            params.append(ENTRY_IDS.car_info, type);
-            fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body: params });
+            params.append(ENTRY_IDS.car_info, type); // "일반차" 또는 "경차" 전달
+
+            // 가장 확실한 문자열 전송 방식
+            fetch(FORM_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params.toString()
+            }).then(() => {
+                console.log("기록 완료:", currentSearchLog.num, type);
+            });
+
             closeAlert();
         }
 
