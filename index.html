@@ -20,13 +20,12 @@
             font-family: -apple-system, sans-serif; 
             display: flex; justify-content: center; align-items: center; 
             height: 100vh; margin: 0; background-color: #f4f7fa; 
-            overflow: hidden; /* 어플 느낌을 위해 스크롤 방지 */
+            overflow: hidden; 
         }
         .login-box { 
             width: 85%; max-width: 320px; padding: 40px 20px;
             background: white; border-radius: 25px; 
             box-shadow: 0 15px 35px rgba(0,0,0,0.08); text-align: center;
-            /* 중앙보다 약간 위로 올리기 위한 설정 (메인 페이지와 동일한 느낌) */
             margin-bottom: 15vh; 
         }
         
@@ -83,8 +82,8 @@
                pattern="[0-9]*" 
                placeholder="비밀번호를 입력하세요" 
                id="pwField"
-               maxlength="4"
-               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
+               maxlength="6"
+               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);">
         
         <button class="login-btn" onclick="validate()">확인</button>
         
@@ -120,9 +119,14 @@
             const pw = document.getElementById('pwField').value;
             
             if(pw === "1257") {
-                // 성공 시 메인 조회 페이지로 이동
+                // 일반 사용자: 메인 조회 페이지
                 window.location.replace("main.html");
-            } else {
+            } 
+            else if(pw === "091226") {
+                // 관리자: 관리자 전용 페이지
+                window.location.replace("admin.html");
+            }
+            else {
                 showAutoAlert("비밀번호를 다시 확인해주세요!");
             }
         }
