@@ -39,6 +39,12 @@
             width: 100%; padding: 16px; background-color: #1e2a5a; color: white;
             border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
         }
+        /* 조회 이력 확인 버튼 스타일 */
+        .history-btn {
+            width: 100%; margin-top: 15px; padding: 12px; background: none; 
+            border: 1.5px solid #1e2a5a; color: #1e2a5a; border-radius: 15px; 
+            font-size: 0.9rem; font-weight: 600; cursor: pointer;
+        }
 
         #selectionBox {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -81,6 +87,7 @@
         <input type="text" inputmode="numeric" placeholder="번호 4자리" id="carNumberInput" maxlength="4" autocomplete="one-time-code"
                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);">
         <button class="search-btn" onclick="runSearch()">조회하기</button>
+        <button class="history-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/본인의_시트_ID/edit')">📊 조회 이력 확인 (엑셀)</button>
     </div>
 
     <div id="selectionBox">
@@ -102,6 +109,32 @@
         let carData = [];
         let errorData = []; 
         let alertTimer = null;
+
+        // --- [구글 폼 설정] ---
+        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
+        const ENTRY_IDS = {
+            time: "entry.1296466587",
+            car_number: "entry.1827352802",
+            result_info: "entry.175331543",
+            status: "entry.445061084"
+        };
+
+        function sendLogToGoogle(carNum, info, status) {
+            const now = new Date();
+            const timeStr = now.toLocaleString('ko-KR');
+
+            const formData = new FormData();
+            formData.append(ENTRY_IDS.time, timeStr);
+            formData.append(ENTRY_IDS.car_number, carNum);
+            formData.append(ENTRY_IDS.result_info, info);
+            formData.append(ENTRY_IDS.status, status);
+
+            fetch(GOOGLE_FORM_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            }).catch(err => console.error("로그 전송 실패", err));
+        }
 
         const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
 
@@ -142,8 +175,10 @@
                 oitokBtn.style.display = 'none';
                 processSelection(matches[0]);
             } else {
-                oitokBtn.style.display = 'block'; 
+                // 미등록 차량 로그 전송
+                sendLogToGoogle(inputVal, "정보 없음", "❌ 미등록");
 
+                oitokBtn.style.display = 'block'; 
                 const violationCount = errorData.filter(err => {
                     const errNumClean = cleanText(err.차량번호);
                     return errNumClean.endsWith(inputValClean);
@@ -162,6 +197,9 @@
             const dong = car.dong;
             const ho = car.ho;
             
+            // 등록 차량 로그 전송
+            sendLogToGoogle(fullNum, `${dong}동 ${ho}호`, "✅ 등록차량");
+
             const familyCars = carData.filter(c => c.dong === dong && c.ho === ho)
                                       .sort((a, b) => a.registration_order - b.registration_order);
             
@@ -193,7 +231,6 @@
                 errorEl.innerText = error;
                 errorEl.style.display = "block";
                 
-                // --- 미등록 팝업(빨간배경)일 때 글자색을 노란색으로 변경 ---
                 if (bgColor === "#FF3636") {
                     errorEl.style.color = "#FFEB3B"; 
                 } else {
