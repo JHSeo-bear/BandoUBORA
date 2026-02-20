@@ -205,6 +205,7 @@
   { "dong": 103, "ho": 101, "car_number_all": "66소5744", "car_number_for": "5744", "registration_number": 135744, "registration_order": 1 },
   { "dong": 103, "ho": 101, "car_number_all": "84수1261", "car_number_for": "1261", "registration_number": 231261, "registration_order": 2 },
   { "dong": 103, "ho": 202, "car_number_all": "24마2684", "car_number_for": "2684", "registration_number": 132684, "registration_order": 1 },
+  { "dong": 103, "ho": 301, "car_number_all": "54더2830", "car_number_for": "2830", "registration_number": 132830, "registration_order": 1 },
   { "dong": 103, "ho": 302, "car_number_all": "134마1722", "car_number_for": "1722", "registration_number": 231722, "registration_order": 2 },
   { "dong": 103, "ho": 302, "car_number_all": "33로9804", "car_number_for": "9804", "registration_number": 139804, "registration_order": 1 },
   { "dong": 103, "ho": 401, "car_number_all": "120저2924", "car_number_for": "2924", "registration_number": 232924, "registration_order": 2 },
@@ -547,7 +548,8 @@
   { "dong": 106, "ho": 402, "car_number_all": "172허9319", "car_number_for": "9319", "registration_number": 269319, "registration_order": 2 },
   { "dong": 106, "ho": 501, "car_number_all": "15로2916", "car_number_for": "2916", "registration_number": 262916, "registration_order": 2 },
   { "dong": 106, "ho": 501, "car_number_all": "244더4155", "car_number_for": "4155", "registration_number": 164155, "registration_order": 1 },
-  { "dong": 106, "ho": 502, "car_number_all": "25보3494", "car_number_for": "3494", "registration_number": 163494, "registration_order": 1 },
+  { "dong": 106, "ho": 502, "car_number_all": "25보3494", "car_number_for": "3494", "registration_number": 263494, "registration_order": 2 },
+  { "dong": 106, "ho": 502, "car_number_all": "14도7724", "car_number_for": "7724", "registration_number": 167724, "registration_order": 1 },
   { "dong": 106, "ho": 601, "car_number_all": "69저5533", "car_number_for": "5533", "registration_number": 165533, "registration_order": 1 },
   { "dong": 106, "ho": 602, "car_number_all": "25우0952", "car_number_for": "0952", "registration_number": 160952, "registration_order": 1 },
   { "dong": 106, "ho": 701, "car_number_all": "101노7504", "car_number_for": "7504", "registration_number": 167504, "registration_order": 1 },
@@ -663,7 +665,8 @@
   { "dong": 107, "ho": 1003, "car_number_all": "67서2951", "car_number_for": "2951", "registration_number": 272951, "registration_order": 2 },
   { "dong": 107, "ho": 1101, "car_number_all": "32모9482", "car_number_for": "9482", "registration_number": 179482, "registration_order": 1 },
   { "dong": 107, "ho": 1102, "car_number_all": "32무4559", "car_number_for": "4559", "registration_number": 174559, "registration_order": 1 },
-  { "dong": 107, "ho": 1102, "car_number_all": "61저7216", "car_number_for": "7216", "registration_number": 277216, "registration_order": 2 },
+  { "dong": 107, "ho": 1102, "car_number_all": "차량량변경?7216", "car_number_for": "7216", "registration_number": 277216, "registration_order": 2 },
+  { "dong": 107, "ho": 1102, "car_number_all": "45버4670", "car_number_for": "4670", "registration_number": 274670, "registration_order": 2 },
   { "dong": 107, "ho": 1103, "car_number_all": "104노1856", "car_number_for": "1856", "registration_number": 271856, "registration_order": 2 },
   { "dong": 107, "ho": 1103, "car_number_all": "229오2326", "car_number_for": "2326", "registration_number": 172326, "registration_order": 1 },
   { "dong": 107, "ho": 1201, "car_number_all": "164노6028", "car_number_for": "6028", "registration_number": 176028, "registration_order": 1 },
@@ -755,6 +758,7 @@
   { "dong": 108, "ho": 401, "car_number_all": "123오2310", "car_number_for": "2310", "registration_number": 282310, "registration_order": 2 },
   { "dong": 108, "ho": 401, "car_number_all": "194호1844", "car_number_for": "1844", "registration_number": 181844, "registration_order": 1 },
   { "dong": 108, "ho": 402, "car_number_all": "41누1106", "car_number_for": "1106", "registration_number": 181106, "registration_order": 1 },
+  { "dong": 108, "ho": 402, "car_number_all": "351보1640", "car_number_for": "1640", "registration_number": 281640, "registration_order": 2 },
   { "dong": 108, "ho": 403, "car_number_all": "05어6904", "car_number_for": "6904", "registration_number": 186904, "registration_order": 1 },
   { "dong": 108, "ho": 404, "car_number_all": "371어4714", "car_number_for": "4714", "registration_number": 184714, "registration_order": 1 },
   { "dong": 108, "ho": 501, "car_number_all": "47머4948", "car_number_for": "4948", "registration_number": 284948, "registration_order": 2 },
@@ -874,6 +878,7 @@
   { "dong": 108, "ho": 2504, "car_number_all": "36러8376", "car_number_for": "8376", "registration_number": 188376, "registration_order": 1 }
 
 ]
+
 
 
 
