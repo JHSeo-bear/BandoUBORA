@@ -37,14 +37,12 @@
         
         .oitok-run-btn { display: none; margin-top: 25px; padding: 15px; background-color: #ffffff; color: #FF3636; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; border: none; width: 100%; }
 
-        /* 버튼 컨테이너 및 타입 버튼 스타일 */
         .car-type-container { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         .btn-row { display: flex; gap: 10px; width: 100%; }
         .type-btn { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; background: white; }
         .btn-normal { color: #1e2a5a; }
         .btn-compact { color: #ff00ea; }
         
-        /* EV 버튼 전용 스타일 */
         .btn-ev { 
             background-color: #00d2ff; 
             color: white; 
@@ -109,7 +107,8 @@
             info: "entry.175331543",
             status: "entry.445061084",
             car_info: "entry.120972837",
-            status_info: "entry.1759997648"
+            status_info: "entry.1759997648",
+            ev_info: "이곳에_실제_ID를_넣으세요" // ★ 여기에 구글 설문지에서 찾은 EV_info의 entry ID를 넣으세요!
         };
 
         async function loadData() {
@@ -178,8 +177,16 @@
             params.append(ENTRY_IDS.car_num, currentSearchLog.num);
             params.append(ENTRY_IDS.info, currentSearchLog.info);
             params.append(ENTRY_IDS.status, currentSearchLog.status);
-            params.append(ENTRY_IDS.car_info, type);
             params.append(ENTRY_IDS.status_info, currentSearchLog.regNum);
+
+            // 로직 변경: EV 버튼 클릭 시 EV_info 칸에 기록
+            if (type === 'EV') {
+                params.append(ENTRY_IDS.ev_info, 'EV'); // 새 질문 칸에 'EV' 전송
+                params.append(ENTRY_IDS.car_info, '일반차'); // 기존 차종 칸에는 '일반차'로 기록
+            } else {
+                params.append(ENTRY_IDS.car_info, type); // 일반차 또는 경차 전송
+                params.append(ENTRY_IDS.ev_info, ''); // EV가 아니면 빈칸 전송
+            }
 
             fetch(FORM_URL, {
                 method: 'POST',
