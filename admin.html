@@ -101,14 +101,15 @@
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
         const HISTORY_URL = "https://docs.google.com/spreadsheets/d/177KRG2kEJFa6PXI1TFKEOIFMTiV22_6oy4lvjsHNFxU/edit?resourcekey=&gid=214788237#gid=214788237"; 
 
+        // 이미지의 설문 항목 순서에 따라 ENTRY_IDS를 구성했습니다.
         const ENTRY_IDS = {
-            time: "entry.1296466587",
-            car_num: "entry.1827352802",
-            info: "entry.175331543",
-            status: "entry.445061084",
-            car_info: "entry.120972837",
-            status_info: "entry.1759997648",
-            ev_info: "이곳에_실제_ID를_넣으세요" // ★ 여기에 구글 설문지에서 찾은 EV_info의 entry ID를 넣으세요!
+            time: "entry.1296466587",      // time (이미지 1번)
+            car_num: "entry.1827352802",   // car_number (이미지 2번)
+            result_info: "entry.175331543",// result_info (이미지 3번)
+            status: "entry.445061084",     // status (이미지 4번)
+            status_info: "entry.1759997648",// status_info (이미지 5번)
+            car_info: "entry.120972837",   // car_info (이미지 6번)
+            ev_info: "여기에_EV_info_ID를_넣으세요" // EV_info (이미지 7번)
         };
 
         async function loadData() {
@@ -175,17 +176,16 @@
             const params = new URLSearchParams();
             params.append(ENTRY_IDS.time, new Date().toLocaleString('ko-KR'));
             params.append(ENTRY_IDS.car_num, currentSearchLog.num);
-            params.append(ENTRY_IDS.info, currentSearchLog.info);
-            params.append(ENTRY_IDS.status, currentSearchLog.status);
-            params.append(ENTRY_IDS.status_info, currentSearchLog.regNum);
+            params.append(ENTRY_IDS.result_info, currentSearchLog.info); // result_info에 동/호수 저장
+            params.append(ENTRY_IDS.status, currentSearchLog.status);     // status에 등록여부 저장
+            params.append(ENTRY_IDS.status_info, currentSearchLog.regNum); // status_info에 등록번호 저장
 
-            // 로직 변경: EV 버튼 클릭 시 EV_info 칸에 기록
             if (type === 'EV') {
-                params.append(ENTRY_IDS.ev_info, 'EV'); // 새 질문 칸에 'EV' 전송
-                params.append(ENTRY_IDS.car_info, '일반차'); // 기존 차종 칸에는 '일반차'로 기록
+                params.append(ENTRY_IDS.car_info, '일반차'); // EV 선택 시 차종은 '일반차'로 기록
+                params.append(ENTRY_IDS.ev_info, 'EV');      // EV_info 항목에 'EV'라고 기록
             } else {
-                params.append(ENTRY_IDS.car_info, type); // 일반차 또는 경차 전송
-                params.append(ENTRY_IDS.ev_info, ''); // EV가 아니면 빈칸 전송
+                params.append(ENTRY_IDS.car_info, type);      // '일반차' 또는 '경차' 기록
+                params.append(ENTRY_IDS.ev_info, '');        // EV가 아닐 경우 빈칸
             }
 
             fetch(FORM_URL, {
