@@ -71,14 +71,16 @@
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
         const HISTORY_URL = "https://docs.google.com/spreadsheets/d/177KRG2kEJFa6PXI1TFKEOIFMTiV22_6oy4lvjsHNFxU/edit?resourcekey=&gid=214788237#gid=214788237"; 
 
-        // 이미지의 시트 열 순서에 맞춘 ENTRY_IDS (순서 보장)
+        /** * ⚠️ 중요: 아래 ID들이 서로 바뀌었을 가능성이 매우 높습니다. 
+         * 시트의 'status_info' 열로 데이터가 가야 하는데 'car_info'로 가고 있다면 아래 두 ID를 서로 맞교환해야 합니다.
+         */
         const ENTRY_IDS = {
-            car_num: "entry.1827352802",    // C열: car_number
-            result_info: "entry.175331543", // D열: result_info (동호수)
-            status: "entry.445061084",      // E열: status (등록차량 여부)
-            status_info: "entry.1759997648",// F열: status_info (일반차/경차 저장용)
-            car_info: "entry.120972837",    // G열: car_info (등록번호 6자리 저장용)
-            ev_info: "여기에_EV_info_ID를_넣으세요" // H열: EV_info (전기차 여부)
+            car_num: "entry.1827352802",    // B열: car_number
+            result_info: "entry.175331543", // C열: result_info
+            status: "entry.445061084",      // D열: status
+            status_info: "entry.1759997648",// E열: status_info (일반차/경차 입력될 곳)
+            car_info: "entry.120972837",    // F열: car_info (등록번호 숫자 입력될 곳)
+            ev_info: "entry.1866468452"     // G열: EV_info (EV 표시될 곳)
         };
 
         async function loadData() {
@@ -133,22 +135,21 @@
             if (!currentSearchLog.num) { closeAlert(); return; }
 
             const params = new URLSearchParams();
-            
-            // 1. 공통 기본 정보
             params.append(ENTRY_IDS.car_num, currentSearchLog.num);
             params.append(ENTRY_IDS.result_info, currentSearchLog.info);
             params.append(ENTRY_IDS.status, currentSearchLog.status);
-            
-            // 2. [G열] 차량등록번호(숫자) 저장
+
+            // [핵심] 위치가 바뀌었다면 아래의 두 ENTRY_IDS 변수명을 서로 바꿔야 합니다.
+            // 1. car_info (F열) 에는 숫자를 보냄
             params.append(ENTRY_IDS.car_info, currentSearchLog.regNum || ""); 
 
-            // 3. 버튼 클릭에 따른 차종(F열) 및 EV여부(H열) 분기 저장
+            // 2. status_info (E열) & EV_info (G열) 분기
             if (type === 'EV') {
-                params.append(ENTRY_IDS.status_info, '일반차'); // EV 선택 시 기본 '일반차'로 기록
-                params.append(ENTRY_IDS.ev_info, 'EV');       // EV_info 열에만 'EV' 기록
+                params.append(ENTRY_IDS.status_info, '일반차'); 
+                params.append(ENTRY_IDS.ev_info, 'EV');
             } else {
-                params.append(ENTRY_IDS.status_info, type);   // '일반차' 또는 '경차' 기록
-                params.append(ENTRY_IDS.ev_info, '');         // EV가 아니면 빈칸
+                params.append(ENTRY_IDS.status_info, type); 
+                params.append(ENTRY_IDS.ev_info, '');
             }
 
             fetch(FORM_URL, {
@@ -156,7 +157,7 @@
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: params.toString()
-            }).then(() => { console.log("데이터 저장 완료:", type); });
+            }).then(() => { console.log("전송 완료:", type); });
 
             closeAlert();
         }
