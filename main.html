@@ -26,7 +26,7 @@
         .car-list { width: 80%; max-width: 300px; list-style: none; padding: 0; margin: 0; }
         .car-item { background: #fff; border: 2px solid #1e2a5a; border-radius: 15px; padding: 15px; margin-bottom: 10px; font-size: 18px; font-weight: 700; text-align: center; cursor: pointer; color: #1e2a5a; }
 
-        /* 결과 알림 팝업 디자인 수정 */
+        /* 결과 알림 팝업 디자인 */
         #customAlert { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
         .alert-content { width: 90%; max-width: 300px; padding: 35px 20px; border-radius: 25px; text-align: center; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         
@@ -35,7 +35,7 @@
         .violation-item { font-size: 26px; font-weight: 900; color: white; margin-bottom: 5px; }
         .violation-count-text { font-size: 19px; font-weight: 700; color: #FFEB3B; margin-bottom: 15px; display: block; }
         
-        /* 미등록 전용 큰 숫자 스타일 */
+        /* 미등록 전용 숫자 스타일 */
         .no-violation-num { font-size: 32px; font-weight: 900; color: white; margin-bottom: 15px; } 
 
         .res-order { font-size: 20px; font-weight: 800; display: block; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.4); padding-top: 15px; }
@@ -106,15 +106,23 @@
             } else if (matches.length === 1) {
                 processSelection(matches[0]);
             } else {
-                // 미등록 차량 처리
+                // 미등록 차량 처리 루틴
                 const inputValClean = cleanText(inputVal);
-                const violationCount = errorData.filter(err => cleanText(err.차량번호).endsWith(inputValClean)).length;
+                // 단속 데이터에서 입력한 4자리와 일치하는 위반 항목들 추출
+                const violationMatches = errorData.filter(err => cleanText(err.차량번호).endsWith(inputValClean));
+                const violationCount = violationMatches.length;
                 
-                showUnregisteredResult(inputVal, violationCount);
+                // 위반 이력이 있다면 단속 데이터에 기록된 '전체 차량번호' 중 가장 최근 것을 가져옴
+                let displayNum = inputVal; 
+                if (violationCount > 0) {
+                    displayNum = violationMatches[violationMatches.length - 1].차량번호;
+                }
+                
+                showUnregisteredResult(displayNum, violationCount);
             }
         }
 
-        function showUnregisteredResult(inputVal, violationCount) {
+        function showUnregisteredResult(displayNum, violationCount) {
             const statusTitle = document.getElementById('resStatusTitle');
             const violationList = document.getElementById('violationList');
             const violationCountDisplay = document.getElementById('violationCountDisplay');
@@ -123,7 +131,10 @@
             const oitokBtn = document.getElementById('oitokBtn');
 
             statusTitle.innerText = violationCount > 0 ? "위반 이력 존재" : "미등록 차량";
-            violationList.innerHTML = `<div class="${violationCount > 0 ? 'violation-item' : 'no-violation-num'}">${inputVal}</div>`;
+            
+            // 위반 이력이 있으면 violation-item 스타일(전체 번호), 없으면 no-violation-num 스타일(입력 번호)
+            violationList.innerHTML = `<div class="${violationCount > 0 ? 'violation-item' : 'no-violation-num'}">${displayNum}</div>`;
+            
             violationCountDisplay.innerText = violationCount > 0 ? `미등록 단속 횟수 [${violationCount}]회` : "";
             violationCountDisplay.style.color = "#FFEB3B";
             
