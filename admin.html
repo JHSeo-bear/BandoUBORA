@@ -42,8 +42,22 @@
         
         .oitok-run-btn { display: none; margin-top: 15px; padding: 15px; background-color: #ffffff; color: #FF3636; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; border: none; width: 100%; }
         .admin-tag { font-size: 12px; color: #1e2a5a; margin-top: 10px; font-weight: bold; opacity: 0.6; }
+
+.btn-violation{
+background:white;
+color:#ff3636;
+font-size:18px;
+padding:16px;
+width:100%;
+border-radius:15px;
+font-weight:900;
+border:none;
+cursor:pointer;
+}
+
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="instruction-text">차량번호를 입력해주세요</div>
@@ -71,14 +85,22 @@
             <button id="oitokBtn" class="oitok-run-btn" onclick="launchOitok()">오이천사 앱 바로 실행</button>
 
             <div class="car-type-container">
-                <div class="btn-row">
-                    <button class="type-btn btn-normal" onclick="saveAndClose('일반차')">일반차</button>
-                    <button class="type-btn btn-compact" onclick="saveAndClose('경차')">경차</button>
-                </div>
-                <button class="type-btn btn-ev" onclick="saveAndClose('EV')">⚡ EV (전기차)</button>
+<div class="btn-row">
+<button class="type-btn btn-normal" onclick="saveAndClose('일반차')">일반차</button>
+<button class="type-btn btn-compact" onclick="saveAndClose('경차')">경차</button>
+</div>
+
+<div class="btn-row">
+<button class="type-btn btn-ev" onclick="saveAndClose('일반(EV)')">⚡일반(EV)</button>
+<button class="type-btn btn-ev" onclick="saveAndClose('경차(EV)')">⚡경차(EV)</button>
+</div>
+
+<button class="type-btn btn-violation" onclick="openViolPopup()">🚨 위반차량 현장등록</button>
             </div>
         </div>
     </div>
+
+
 
     <script>
         let carData = [], errorData = [], alertTimer = null;
@@ -88,14 +110,14 @@
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
         const HISTORY_URL = "https://docs.google.com/spreadsheets/d/177KRG2kEJFa6PXI1TFKEOIFMTiV22_6oy4lvjsHNFxU/edit?resourcekey=&gid=214788237#gid=214788237"; 
 
-        const ENTRY_IDS = {
-            car_num: "entry.1827352802",    
-            result_info: "entry.175331543", 
-            status: "entry.445061084",      
-            status_info: "entry.120972837", 
-            car_info: "entry.186262822",    
-            ev_info: "entry.1759997648"     
-        };
+const ENTRY_IDS = {
+    car_num: "entry.355647351",
+    result_info: "entry.965336314",
+    status: "entry.1489715394",
+    status_info: "entry.2061658845",
+    car_info: "entry.747005680",
+    info: "entry.829304981"
+};
 
         async function loadData() {
             try {
@@ -204,10 +226,258 @@
             });
             document.getElementById('selectionBox').style.display = 'flex';
         }
-    </script>
+
+function openViolPopup(){
+
+document.getElementById("violPopup").style.display="flex";
+
+document.getElementById("violCarNum").value=currentSearchLog.num || "";
+document.getElementById("violRoom").value=currentSearchLog.info || "";
+
+}
+
+
+function closeViolPopup(){
+
+document.getElementById("violPopup").style.display="none";
+
+}
+
+function confirmCancel(){
+
+if(confirm("취소하시겠습니까?")){
+
+closeViolPopup();
+
+}
+
+}
+
+function takePhoto(){
+
+const input=document.createElement("input");
+
+input.type="file";
+input.accept="image/*";
+input.capture="environment";
+
+input.onchange=function(e){
+
+capturedImage=e.target.files[0];
+
+alert("사진 촬영 완료");
+
+};
+
+input.click();
+
+}
+
+async function saveViolation(){
+
+const carNum=document.getElementById("violCarNum").value;
+const room=document.getElementById("violRoom").value;
+const type=document.getElementById("violType").value;
+
+const params=new URLSearchParams();
+
+params.append("entry.355647351",carNum);
+params.append("entry.965336314",room);
+params.append("entry.1489715394","🚨 위반등록");
+params.append("entry.2061658845",type);
+
+fetch(FORM_URL,{
+method:"POST",
+mode:"no-cors",
+body:params
+});
+
+alert("위반 등록 완료");
+
+closeViolPopup();
+
+}
+
+function confirmCancel(){
+
+if(confirm("취소하시겠습니까?")){
+
+closeViolPopup();
+
+}
+
+}
+
+</script>
+
+
+<!-- 현장등록 팝업 -->
+<div id="violPopup" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+justify-content:center;
+align-items:center;
+z-index:3000;
+padding:15px;
+box-sizing:border-box;
+overflow:auto;
+">
+    <div style="
+    width:100%;
+    max-width:300px;
+    background:white;
+    border-radius:20px;
+    padding:18px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.3);
+    box-sizing:border-box;
+    ">
+
+        <h3 style="
+        margin-top:0;
+        color:#ff3636;
+        text-align:center;
+        font-weight:800;
+        margin-bottom:15px;
+        ">
+        🔥위반 차량 등록
+        </h3>
+
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <div style="flex:1;">
+                <label style="font-size:13px;font-weight:bold;">차량번호</label>
+                <input id="violCarNum" readonly
+                style="width:100%;height:32px;padding:0px;font-size:14px;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;">
+            </div>
+
+            <div style="flex:1;">
+                <label style="font-size:13px;font-weight:bold;">동 / 호수</label>
+                <input id="violRoom"
+                style="width:100%;height:32px;padding:0px;font-size:14px;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;">
+            </div>
+        </div>
+
+        <label style="font-size:13px;font-weight:bold;">위반 항목</label>
+        <select id="violType"
+        style="width:100%;padding:10px;margin-bottom:10px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;">
+            <option value="미등록 미신고 차량 주차">미등록 미신고 차량 주차</option>
+            <option value="방문차량주차규정위반">방문차량주차규정위반</option>
+            <option value="주차허용구역 위반(No.2)">주차허용구역 위반(No.2)</option>
+            <option value="주차허용구역 위반(경차)">주차허용구역 위반(경차)</option>
+            <option value="보행로 및 차량통행 방해">보행로 및 차량통행 방해</option>
+            <option value="야간전용주차면 위반">야간전용주차면 위반</option>
+            <option value="이륜차주차구역 위반">이륜차주차구역 위반</option>
+            <option value="주차선(침범) 위반">주차선(침범) 위반</option>
+            <option value="차량등록증 부착규정 위반">차량등록증 부착규정 위반</option>
+            <option value="기타">기타</option>
+        </select>
+
+        <label style="font-size:13px;font-weight:bold;">위반 위치</label>
+        <select id="violFloor"
+        style="width:100%;padding:10px;margin-bottom:10px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;">
+            <option value="지하1층">지하1층</option>
+            <option value="지하2층">지하2층</option>
+            <option value="지하3층">지하3층</option>
+            <option value="지하4층">지하4층</option>
+            <option value="지상">지상</option>
+        </select>
+
+        <label style="font-size:13px;font-weight:bold;">단속일시</label>
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <input id="violMonth" type="number" placeholder="월"
+            style="width:20%;padding:8px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box;">
+
+            <input id="violDay" type="number" placeholder="일"
+            style="width:20%;padding:8px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box;">
+
+            <input id="violTime" type="time"
+            style="width:60%;padding:8px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box;">
+        </div>
+
+        <label style="font-size:13px;font-weight:bold;">비고</label>
+        <input id="violMemo"
+        style="width:100%;height:32px;padding:0px;margin-bottom:12px;border-radius:5px;border:1px solid #ccc;font-size:14px;box-sizing:border-box;">
+
+        <button onclick="takePhoto()" style="
+        width:100%;
+        padding:14px;
+        background:#1e88e5;
+        color:white;
+        border:none;
+        border-radius:12px;
+        font-weight:800;
+        margin-top:6px;
+        margin-bottom:8px;
+        ">
+            <span id="photoBtnText">📷 사진 촬영</span>
+        </button>
+
+        <div style="display:flex;gap:8px;">
+<button onclick="confirmCancel()" style="
+flex:1;
+padding:12px;
+border-radius:10px;
+border:none;
+background:#555;
+color:white;
+font-weight:700;
+">
+취소
+</button>
+
+<button id="saveBtn" onclick="saveViolation()" style="
+flex:1;
+padding:12px;
+background:#ff3636;
+color:white;
+border:none;
+border-radius:10px;
+font-weight:800;
+">
+등록
+</button>
+
+        </div>
+    </div>
+</div>
+
+
+<div id="loadingOverlay" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+z-index:5000;
+justify-content:center;
+align-items:center;
+">
+
+<div style="
+background:white;
+padding:25px 35px;
+border-radius:15px;
+font-size:20px;
+font-weight:800;
+color:#1e2a5a;
+box-shadow:0 10px 25px rgba(0,0,0,0.3);
+">
+
+⏳ 등록중입니다...
+
+</div>
+
+</div>
+
+
 </body>
 </html>
-
 
 
 
