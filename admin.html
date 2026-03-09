@@ -126,7 +126,8 @@ const db = firebase.firestore();
         let currentSearchLog = {};
         const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
 
-        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeWmXztwQFb794USNUlrgIkId57XLoYJWFdI_ex6IVe91DvEw/formResponse";
+const FORM_URL =
+"https://docs.google.com/forms/d/e/1FAIpQLSfnYUZhNbAFiyuUg32tOp3ESmpRgWXFgygi81X3oNsywMQf-g/formResponse";
         const HISTORY_URL = "https://docs.google.com/spreadsheets/d/1YKYEVnie2ub8Er8rB3LSEZmSqygxRbyDo01N15Ghtow/edit?gid=1541395460#gid=1541395460"; 
 
 const ENTRY_IDS = {
