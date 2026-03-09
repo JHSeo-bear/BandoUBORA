@@ -296,35 +296,64 @@ input.click();
 
 async function saveViolation(){
 
-const carNum = document.getElementById("violCarNum").value;
-const room = document.getElementById("violRoom").value;
-const type = document.getElementById("violType").value;
-
-/* 여기 추가 */
-const floor = document.getElementById("violFloor").value;
-const month = parseInt(document.getElementById("violMonth").value);
-const day = parseInt(document.getElementById("violDay").value);
-const time = document.getElementById("violTime").value;
-const memo = document.getElementById("violMemo").value.trim();
-
-const carKey = carNum.replace(/[^0-9]/g,"").slice(-4);
+const saveBtn = document.getElementById("saveBtn");
+saveBtn.disabled = true;
+saveBtn.innerText = "등록중입니다...";
 
 try{
 
+const carNum = document.getElementById("violCarNum").value.trim();
+const room = document.getElementById("violRoom").value.trim();
+const type = document.getElementById("violType").value;
+const floor = document.getElementById("violFloor").value;
+const memo = document.getElementById("violMemo").value.trim();
+
+const month = parseInt(document.getElementById("violMonth").value);
+const day = parseInt(document.getElementById("violDay").value);
+const time = document.getElementById("violTime").value;
+
+if(!carNum){
+alert("차량번호를 입력하세요.");
+saveBtn.disabled=false;
+saveBtn.innerText="등록";
+return;
+}
+
+if(!month || !day){
+alert("단속일시를 확인하세요.");
+saveBtn.disabled=false;
+saveBtn.innerText="등록";
+return;
+}
+
+const carKey = carNum.replace(/[^0-9]/g,"").slice(-4);
+
+let hour=0;
+let minute=0;
+
+if(time){
+const parts=time.split(":");
+hour=parseInt(parts[0])||0;
+minute=parseInt(parts[1])||0;
+}
+
+const year=new Date().getFullYear();
+const violationDateObj=new Date(year,month-1,day,hour,minute);
+
 await db.collection("violations").add({
+
 carNum: carNum,
 carNumSearch: carKey,
 room: room,
 type: type,
-
-/* 여기 추가 */
 floor: floor,
-month: month,
-day: day,
-time: time,
 memo: memo,
 
-createdAt: firebase.firestore.Timestamp.now()
+photoUrl: "",
+photoName: "",
+
+violationDate: firebase.firestore.Timestamp.fromDate(violationDateObj)
+
 });
 
 alert("위반 등록 완료");
@@ -339,9 +368,10 @@ alert("등록 실패");
 
 }
 
+saveBtn.disabled=false;
+saveBtn.innerText="등록";
+
 }
-
-
 </script>
 
 
