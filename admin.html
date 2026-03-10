@@ -122,6 +122,8 @@ if (!firebase.apps.length) {
 
 const db = firebase.firestore();
 
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRnQVSpOO0zyW60BV3qKNmnM5-s4AVyWwBpcxUpVhy57XdiWF9_BerhAQWlrL6MOI/exec";
+
         let carData = [], errorData = [], alertTimer = null;
         let currentSearchLog = {};
         const cleanText = (str) => String(str || "").replace(/[^0-9가-힣]/g, "");
@@ -248,16 +250,6 @@ function saveAndClose(type) {
             document.getElementById('selectionBox').style.display = 'flex';
         }
 
-function openViolPopup(){
-
-document.getElementById("violPopup").style.display="flex";
-
-document.getElementById("violCarNum").value=currentSearchLog.num || "";
-document.getElementById("violRoom").value=currentSearchLog.info || "";
-
-}
-
-
 function closeViolPopup(){
 
 document.getElementById("violPopup").style.display="none";
@@ -274,31 +266,12 @@ closeViolPopup();
 
 }
 
-function takePhoto(){
-
-const input=document.createElement("input");
-
-input.type="file";
-input.accept="image/*";
-input.capture="environment";
-
-input.onchange=function(e){
-
-capturedImage=e.target.files[0];
-
-alert("사진 촬영 완료");
-
-};
-
-input.click();
-
-}
-
 async function saveViolation(){
 
 const saveBtn = document.getElementById("saveBtn");
 saveBtn.disabled = true;
 saveBtn.innerText = "등록중입니다...";
+document.getElementById("loadingOverlay").style.display="flex";
 
 try{
 
@@ -314,6 +287,7 @@ const time = document.getElementById("violTime").value;
 
 if(!carNum){
 alert("차량번호를 입력하세요.");
+document.getElementById("loadingOverlay").style.display="none";
 saveBtn.disabled=false;
 saveBtn.innerText="등록";
 return;
@@ -321,12 +295,14 @@ return;
 
 if(!month || !day){
 alert("단속일시를 확인하세요.");
+document.getElementById("loadingOverlay").style.display="none";
 saveBtn.disabled=false;
 saveBtn.innerText="등록";
 return;
 }
 
-const carKey = carNum.replace(/[^0-9]/g,"").slice(-4);
+const carNumClean = carNum.replace(/\s/g,"");
+const carKey = carNumClean.replace(/[^0-9]/g,"").slice(-4);
 
 let hour=0;
 let minute=0;
@@ -340,6 +316,26 @@ minute=parseInt(parts[1])||0;
 const year=new Date().getFullYear();
 const violationDateObj=new Date(year,month-1,day,hour,minute);
 
+
+/* 사진 업로드 */
+
+let photoUrl = "";
+let photoName = "";
+
+if(!capturedImage){
+alert("사진을 촬영해주세요.");
+document.getElementById("loadingOverlay").style.display="none";
+saveBtn.disabled=false;
+saveBtn.innerText="등록";
+return;
+}
+
+const uploadResult = await uploadPhotoToDrive(capturedImage, carNum);
+photoUrl = uploadResult.url;
+photoName = uploadResult.fileName;
+
+/* Firestore 저장 */
+
 await db.collection("violations").add({
 
 carNum: carNum,
@@ -349,19 +345,22 @@ type: type,
 floor: floor,
 memo: memo,
 
-photoUrl: "",
-photoName: "",
+photoUrl: photoUrl,
+photoName: photoName,
 
 violationDate: firebase.firestore.Timestamp.fromDate(violationDateObj)
 
 });
 
+document.getElementById("loadingOverlay").style.display="none";
 alert("위반 등록 완료");
 
 closeViolPopup();
 closeAlert();
 
 }catch(e){
+
+document.getElementById("loadingOverlay").style.display="none";
 
 console.error(e);
 alert("등록 실패");
@@ -372,6 +371,140 @@ saveBtn.disabled=false;
 saveBtn.innerText="등록";
 
 }
+
+function openViolPopup() {
+
+capturedImage = null;
+document.getElementById("photoBtnText").innerText = "📷 사진 촬영";
+
+    document.getElementById("violPopup").style.display = "flex";
+
+    const carInput = document.getElementById("violCarNum");
+    const roomInput = document.getElementById("violRoom");
+
+    if (currentSearchLog.status === "❌ 미등록") {
+        carInput.readOnly = false;
+        carInput.value = "";
+        carInput.placeholder = "차량번호 전체 입력";
+        roomInput.value = "외부차량";
+        roomInput.readOnly = true;
+    } else {
+        carInput.readOnly = true;
+        carInput.value = currentSearchLog.num;
+        carInput.placeholder = "";
+        roomInput.value = currentSearchLog.info || "";
+        roomInput.readOnly = true;
+    }
+
+    const now = new Date();   // ← 여기서 현재시간 가져옴
+    document.getElementById("violMonth").value = now.getMonth() + 1;  // 월 자동 입력
+    document.getElementById("violDay").value = now.getDate();         // 일 자동 입력
+
+    const hours = String(now.getHours()).padStart(2, '0');            // 시
+    const minutes = String(now.getMinutes()).padStart(2, '0');        // 분
+    document.getElementById("violTime").value = hours + ":" + minutes; // 시간 자동 입력
+
+    document.getElementById("violMemo").value = "현장등록";
+}
+
+async function fileToBase64(file){
+
+return new Promise((resolve,reject)=>{
+
+const img = new Image();
+const reader = new FileReader();
+
+reader.onload = function(e){
+img.src = e.target.result;
+};
+
+img.onload = function(){
+
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
+
+const maxWidth = 900;
+
+let width = img.width;
+let height = img.height;
+
+if(width > maxWidth){
+height = height * (maxWidth / width);
+width = maxWidth;
+}
+
+canvas.width = width;
+canvas.height = height;
+
+ctx.drawImage(img,0,0,width,height);
+
+const compressed = canvas.toDataURL("image/jpeg",0.6);
+
+const base64 = compressed.split(",")[1];
+
+resolve(base64);
+
+};
+
+reader.onerror = reject;
+reader.readAsDataURL(file);
+
+});
+}
+
+async function uploadPhotoToDrive(file, carNum){
+
+const base64 = await fileToBase64(file);
+
+const fileName = carNum + "_" + Date.now() + ".jpg";
+
+const params = new URLSearchParams();
+params.append("fileName", fileName);
+params.append("mimeType", "image/jpeg");
+params.append("base64Data", base64);
+
+const response = await fetch(APPS_SCRIPT_URL,{
+method:"POST",
+body:params
+});
+
+const result = await response.json();
+
+if(!result.success){
+throw new Error("드라이브 업로드 실패");
+}
+
+return {
+url: result.url,
+fileName: result.fileName
+};
+
+}
+
+function takePhoto() {
+
+const input = document.createElement("input");
+input.type = "file";
+input.accept = "image/*";
+input.capture = "environment";
+
+input.onchange = function(e) {
+
+const file = e.target.files[0];
+if (!file) return;
+
+capturedImage = file;
+
+document.getElementById("photoBtnText").innerText = "✅ 촬영 완료";
+
+alert("사진 촬영 완료");
+
+};
+
+input.click();
+
+}
+
 </script>
 
 
